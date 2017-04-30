@@ -1,0 +1,17 @@
+#container {
+    position: relative;
+}
+
+#canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+#videoel {
+    -o-transform : scaleX(-1);
+    -webkit-transform : scaleX(-1);
+    transform : scaleX(-1);
+    -ms-filter : fliph; /*IE*/
+    filter : fliph; /*IE*/
+}
