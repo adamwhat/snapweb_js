@@ -1,0 +1,147 @@
+function createShape(gl, meshdata) {
+    var shape = {};
+
+    var attributeData = [];
+    for (var i = 0; i < meshdata.vertices.length / 3; i++) {
+        attributeData.push(meshdata.vertices[3*i]);
+        attributeData.push(meshdata.vertices[3*i+1]);
+        attributeData.push(meshdata.vertices[3*i+2]);
+        attributeData.push(meshdata.vertexNormals[3*i]);        
+        attributeData.push(meshdata.vertexNormals[3*i+1]);        
+        attributeData.push(meshdata.vertexNormals[3*i+2]);        
+    }
+
+    shape.vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attributeData), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    shape.triIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshdata.indices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    shape.triLen = meshdata.indices.length;
+
+    return shape;
+}
+
+function drawShape(gl, shape, program, Mcam, Mproj) {
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+    var positionLocation = gl.getAttribLocation(program, "vert_position");
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 6, 0);
+    var normalsLocation = gl.getAttribLocation(program, "normal");
+    gl.enableVertexAttribArray(normalsLocation);
+    gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 6, 4 * 3);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
+    // var textureIndexLocation = gl.getUniformLocation(program, "textureIndex");
+    // gl.uniform1f(textureIndexLocation, textureIndex);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+    gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+
+    gl.useProgram(null);
+}
+
+function glEnv(meshes) {
+    var gl = initializeWebGL("webglCanvas");
+
+    gl.depthFunc(gl.LESS);
+    gl.enable(gl.DEPTH_TEST);
+
+    var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
+    var occluder = meshes.occluder;
+
+    var shape = createShape(gl, occluder);
+
+    function drawFrame(Mcam, Mproj) {
+        gl.useProgram(program);
+
+        gl.clearColor(0.5, 0.5, 0.5, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        drawShape(gl, shape, program, Mcam, Mproj);
+
+        gl.useProgram(null);
+    }
+
+    return {
+        shape: shape,
+        drawFrame: drawFrame,
+        occluder: occluder
+    };
+}
+
+function degreeToRadian(d) {
+    return d * Math.PI / 180.0;
+}
+
+function radianToDegree(r) {
+    return r * 180.0 / Math.PI;
+}
+
+function getProjectionMatrix() {
+    var projMat = mat4.create();
+    mat4.perspective(projMat, 70, 800.0 / 600.0, 0.01, 2000.0);
+    return projMat;
+}
+
+function getMVMatrix() {
+    var xAxis = vec3.fromValues(1, 0, 0);
+    var yAxis = vec3.fromValues(0, 1, 0);
+    var zAxis = vec3.fromValues(0, 0, 1);
+
+    var T = mat4.create();
+    var translation = vec3.fromValues(translateX, translateY, translateZ);
+    mat4.fromTranslation(T, translation);
+
+    var R = mat4.create();
+    // // Rotation XYZ
+    mat4.rotate(R, R, degreeToRadian(rotationX), xAxis);
+    mat4.rotate(R, R, degreeToRadian(rotationY), yAxis);
+    mat4.rotate(R, R, degreeToRadian(rotationZ), zAxis);
+
+    var M = mat4.create();
+    mat4.mul(M, T, R);
+    var result = mat4.create();
+    mat4.invert(result, M);
+
+    return result;
+}
+
+function runWebGL(meshes) {
+    env = glEnv(meshes);
+    updateWebGL();
+}
+
+function updateWebGL() {
+    // Change camera matrix here
+    var Mproj = getProjectionMatrix();
+    var Mcam = getMVMatrix();
+    env.drawFrame(Mcam, Mproj);
+    window.requestAnimationFrame(updateWebGL);
+}
+
+window.onload = function () {
+    OBJ.downloadMeshes({
+        'occluder': 'data/occluder.obj'
+    }, runWebGL);
+}
+
+var env;
+
+var rotationX = 0.0;
+var rotationY = 0.0;
+var rotationZ = 0.0;
+
+var translateX = 0.0;
+var translateY = 35.0;
+var translateZ = 250.0;
