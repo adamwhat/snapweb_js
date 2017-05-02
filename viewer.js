@@ -162,11 +162,13 @@ function runWebGL(meshes) {
 }
 
 function updateWebGL() {
-    // Change camera matrix here
-    var Mproj = getProjectionMatrix();
-    var Mcam = getMVMatrix();
-    env.drawFrame(Mcam, Mproj);
-    window.requestAnimationFrame(updateWebGL);
+    setTimeout(function() {
+        // Change camera matrix here
+        var Mproj = getProjectionMatrix();
+        var Mcam = getMVMatrix();
+        env.drawFrame(Mcam, Mproj);
+        window.requestAnimationFrame(updateWebGL);
+    }, 1000 / fps);
 }
 
 window.onload = function () {
@@ -175,12 +177,3 @@ window.onload = function () {
     }, runWebGL);
 }
 
-var env;
-
-var rotationX = 0.0;
-var rotationY = 0.0;
-var rotationZ = 0.0;
-
-var translateX = 0.0;
-var translateY = 35.0;
-var translateZ = 250.0;
