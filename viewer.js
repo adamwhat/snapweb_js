@@ -95,6 +95,47 @@ function getProjectionMatrix() {
 }
 
 function getMVMatrix() {
+    var numOfPoints = 5;
+    if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() != false) {
+        requestData = {};
+        var positions = ctracker.getCurrentPosition();
+        requestData['objpoints'] = [];
+        requestData['imgpoints'] = [];
+
+        for (var i = 0; i < numOfPoints; i++) {
+            requestData['imgpoints'].push(positions[i]);
+            var objectVertexIndex = occluder_mapping[i];
+            requestData['objpoints'].push([env.occluder.vertices[objectVertexIndex],
+                env.occluder.vertices[objectVertexIndex+1], env.occluder.vertices[objectVertexIndex+2]]);
+        }
+        requestData['fx'] = 600;
+        requestData['fy'] = 600;
+        requestData['cx'] = 300;
+        requestData['cy'] = 200;
+
+        $.ajax({
+            async: true,
+            url: 'http://localhost:9999/solvepnp',
+            data: JSON.stringify(requestData),
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+            success: function (data) {
+                
+                translateX = data["translation"][0][0];
+                translateY = data["translation"][1][0];
+                translateZ = data["translation"][2][0];
+
+                rotationX = data["rotation"][0][0];
+                rotationY = data["rotation"][1][0];
+                rotationZ = data["rotation"][2][0];
+            }
+        });
+    }
+
     var xAxis = vec3.fromValues(1, 0, 0);
     var yAxis = vec3.fromValues(0, 1, 0);
     var zAxis = vec3.fromValues(0, 0, 1);

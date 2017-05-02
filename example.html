@@ -10,14 +10,46 @@
             <h2>Example</h2>
 
             <div id="container">
-                <video id="videoel" width="400" height="300" preload="auto" loop></video>
-                <canvas id="canvas" width="368" height="288"></canvas>
+                <video id="videoel" width="600" height="400" preload="auto" loop></video>
+                <canvas id="clmtrackerCanvas" width="600" height="400"></canvas>
+                <canvas id="webglCanvas" width="600" height="400"></canvas>
             </div>
             <p>Printing coordinates of the first 10 points in facial features:</p>
 
             <p id="positions"></p>
         </div>
-        <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script id="vertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
+
+            attribute vec3 vert_position;
+            attribute vec3 normal;
+
+            varying vec4 geom_texCoord;
+
+            void main() {
+                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                geom_texCoord = vec4(normal, 1.0);
+            }
+        </script>
+
+        <script id="fragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+            varying vec4 geom_texCoord;
+
+            void main() {
+                gl_FragColor = geom_texCoord;
+            }
+        </script>
+        <script src="./js/occluder_mapping.js"></script>
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <script src="js/jquery-ui.min.js"></script>
+        <script src="js/gl-matrix-min.js"></script>
+        <script src="js/preloadjs-0.6.2.min.js"></script>
+        <script src="js/webgl-obj-loader.js"></script>
+        <script src="./webgl.js"></script>
+        <script src="./viewer.js"></script>
+
         <script src="./js/utils.js"></script>
         <script src="./js/clmtrackr.js"></script>
         <script src="./js/model_pca_20_svm.js"></script>
@@ -33,12 +65,12 @@
 
             init_helper_information($('#positions')[0]);
 
-            var canvasInput = $('#canvas')[0];
+            var canvasInput = $('#clmtrackerCanvas')[0];
             var cc = canvasInput.getContext('2d');
             function drawLoop() {
-                requestAnimationFrame(drawLoop);
                 cc.clearRect(0, 0, canvasInput.width, canvasInput.height);
                 ctracker.draw(canvasInput);
+                requestAnimationFrame(drawLoop);
             }
             drawLoop();
         </script>
