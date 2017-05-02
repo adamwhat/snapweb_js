@@ -134,6 +134,7 @@ function getMVMatrix() {
                 rotationX = data["rotation"][0][0];
                 rotationY = data["rotation"][1][0];
                 rotationZ = data["rotation"][2][0];
+                console.log(data["translation"])
             }
         });
     }
