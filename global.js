@@ -9,3 +9,5 @@ var translateY = 35.0;
 var translateZ = 250.0;
 
 var fps = 10;
+
+var canvas = $("#webglCanvas");

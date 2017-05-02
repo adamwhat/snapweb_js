@@ -109,11 +109,15 @@ function getMVMatrix() {
         Object.keys(occluder_mapping).forEach(function (key) {
             requestData['imgpoints'].push(positions[key]);
             requestData['objpoints'].push(occluder_mapping[key]);
-        })
-        requestData['fx'] = 600;
-        requestData['fy'] = 600;
-        requestData['cx'] = 300;
-        requestData['cy'] = 200;
+        });
+
+
+        requestData['width'] = canvas.width();
+        requestData['height'] = canvas.height();
+        // requestData['fx'] = 600;
+        // requestData['fy'] = 600;
+        // requestData['cx'] = 300;
+        // requestData['cy'] = 200;
 
         $.ajax({
             async: true,
@@ -134,7 +138,6 @@ function getMVMatrix() {
                 rotationX = data["rotation"][0][0];
                 rotationY = data["rotation"][1][0];
                 rotationZ = data["rotation"][2][0];
-                console.log(data["translation"])
             }
         });
     }
