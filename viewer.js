@@ -63,10 +63,14 @@ function glEnv(meshes) {
     var shape = createShape(gl, occluder);
 
     function drawFrame(Mcam, Mproj) {
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.BLEND);
         gl.useProgram(program);
 
-        gl.clearColor(0.5, 0.5, 0.5, 1.0);
+        gl.clearColor(0, 0, 0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
+
+
 
         drawShape(gl, shape, program, Mcam, Mproj);
 

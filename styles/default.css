@@ -2,12 +2,6 @@
     position: relative;
 }
 
-#clmtrackerCanvas {
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
 #videoel {
     -o-transform : scaleX(-1);
     -webkit-transform : scaleX(-1);
@@ -16,7 +10,13 @@
     filter : fliph; /*IE*/
 }
 
-#overlay, #webgl {
+#webglCanvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+#overlay, #webgl, #clmtrackerCanvas {
     position: absolute;
     top: 0px;
     left: 0px;
