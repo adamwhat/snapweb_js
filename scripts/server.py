@@ -14,6 +14,7 @@ def hello():
     data = json.loads(request.data.decode("utf-8"))
     imgpoints = data['imgpoints']
     objpoints = data['objpoints']
+
     fx = data['fx']
     fy = data['fy']
     cx = data['cx']
