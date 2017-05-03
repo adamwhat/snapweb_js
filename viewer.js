@@ -8,7 +8,9 @@ function createShape(gl, meshdata) {
         attributeData.push(meshdata.vertices[3*i+2]);
         attributeData.push(meshdata.vertexNormals[3*i]);        
         attributeData.push(meshdata.vertexNormals[3*i+1]);        
-        attributeData.push(meshdata.vertexNormals[3*i+2]);        
+        attributeData.push(meshdata.vertexNormals[3*i+2]);
+        attributeData.push(meshdata.textures[2*i]);     
+        attributeData.push(meshdata.textures[2*i+1]);
     }
 
     shape.vertexBuffer = gl.createBuffer();
@@ -22,26 +24,38 @@ function createShape(gl, meshdata) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     shape.triLen = meshdata.indices.length;
-
     return shape;
 }
 
-function drawShape(gl, shape, program, Mcam, Mproj) {
+function drawShape(gl, shape, program, Mcam, Mproj, texture) {
     gl.useProgram(program);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
     var positionLocation = gl.getAttribLocation(program, "vert_position");
     gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 6, 0);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
     var normalsLocation = gl.getAttribLocation(program, "normal");
     gl.enableVertexAttribArray(normalsLocation);
-    gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 6, 4 * 3);
+    gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 8, 4 * 3);
+    var uvLocation = gl.getAttribLocation(program, "uv");
+    gl.enableVertexAttribArray(uvLocation);
+    gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 4 * 8, 4 * 6);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
     // var textureIndexLocation = gl.getUniformLocation(program, "textureIndex");
     // gl.uniform1f(textureIndexLocation, textureIndex);
+    if (gl.getUniformLocation(program, "texture") != null) {
+        // Step 1: Activate a "texture unit" of your choosing.
+        gl.activeTexture(gl.TEXTURE0);
+        // Step 2: Bind the texture you want to use.
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // Step 3: Set the uniform to the "index" of the texture unit you just activated.
+        var textureLocation = gl.getUniformLocation(program, "texture");
+        gl.uniform1i(textureLocation, 0);
+    }
+
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
     gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
@@ -51,16 +65,35 @@ function drawShape(gl, shape, program, Mcam, Mproj) {
     gl.useProgram(null);
 }
 
-function glEnv(meshes) {
+function initText(gl, textImg) {
+    // Step 1: Create the texture object.
+    var texture = gl.createTexture();
+    // Step 2: Bind the texture object to the "target" TEXTURE_2D
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // Step 3: (Optional) Tell WebGL that pixels are flipped vertically,
+    //         so that we don't have to deal with flipping the y-coordinate.
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    // Step 4: Download the image data to the GPU.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textImg);
+    // Step 5: Creating a mipmap so that the texture can be anti-aliased.
+    gl.generateMipmap(gl.TEXTURE_2D);
+    // Step 6: Clean up.  Tell WebGL that we are done with the target.
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return texture;
+}
+
+function glEnv(meshes, textImg) {
     var gl = initializeWebGL("webglCanvas");
 
     gl.depthFunc(gl.LESS);
     gl.enable(gl.DEPTH_TEST);
 
     var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
-    var occluder = meshes.occluder;
+    var texture = initText(gl, textImg);
 
-    var shape = createShape(gl, occluder);
+    // var occluder = meshes.occluder;
+    var flowers1 = meshes.flowers1;
+    var shape = createShape(gl, flowers1);
 
     function drawFrame(Mcam, Mproj) {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -70,9 +103,7 @@ function glEnv(meshes) {
         gl.clearColor(0, 0, 0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-
-
-        drawShape(gl, shape, program, Mcam, Mproj);
+        drawShape(gl, shape, program, Mcam, Mproj, texture);
 
         gl.useProgram(null);
     }
@@ -80,7 +111,8 @@ function glEnv(meshes) {
     return {
         shape: shape,
         drawFrame: drawFrame,
-        occluder: occluder
+        // occluder: occluder,
+        flowers1: flowers1,
     };
 }
 
@@ -160,8 +192,8 @@ function getMVMatrix() {
     return result;
 }
 
-function runWebGL(meshes) {
-    env = glEnv(meshes);
+function runWebGL(meshes, textImg) {
+    env = glEnv(meshes, textImg);
     updateWebGL();
 }
 
@@ -171,13 +203,21 @@ function updateWebGL() {
         var Mproj = getProjectionMatrix();
         var Mcam = getMVMatrix();
         env.drawFrame(Mcam, Mproj);
+        // TODO:
         window.requestAnimationFrame(updateWebGL);
     }, 1000 / fps);
 }
 
 window.onload = function () {
-    OBJ.downloadMeshes({
-        'occluder': 'data/occluder.obj'
-    }, runWebGL);
+    var textImg = new Image();
+    textImg.onload = function() {
+        OBJ.downloadMeshes({
+        'occluder': 'data/occluder.obj',
+        'flowers1': 'data/flowers1.obj',
+        }, function(meshes) {
+            runWebGL(meshes, textImg);
+        });
+    };
+    textImg.src = "data/flower_wreath.png";
 }
 
