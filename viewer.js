@@ -34,9 +34,9 @@ function drawShape(gl, shape, program, Mcam, Mproj, texture) {
     var positionLocation = gl.getAttribLocation(program, "vert_position");
     gl.enableVertexAttribArray(positionLocation);
     gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
-    var normalsLocation = gl.getAttribLocation(program, "normal");
-    gl.enableVertexAttribArray(normalsLocation);
-    gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 8, 4 * 3);
+    // var normalsLocation = gl.getAttribLocation(program, "normal");
+    // gl.enableVertexAttribArray(normalsLocation);
+    // gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 8, 4 * 3);
     var uvLocation = gl.getAttribLocation(program, "uv");
     gl.enableVertexAttribArray(uvLocation);
     gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 4 * 8, 4 * 6);
@@ -143,7 +143,7 @@ function getMVMatrix() {
             requestData['objpoints'].push(occluder_mapping[key]);
         });
 
-
+        var canvas = $("#clmtrackerCanvas");
         requestData['width'] = canvas.width();
         requestData['height'] = canvas.height();
         // requestData['fx'] = 600;
