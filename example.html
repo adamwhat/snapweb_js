@@ -46,13 +46,13 @@
                 gl_FragColor = texture2D(texture, geom_texCoord);
             }
         </script>
+        <script src="./global.js"></script>
         <script src="./js/occluder_mapping.js"></script>
         <script src="js/jquery-3.1.1.min.js"></script>
         <script src="js/jquery-ui.min.js"></script>
         <script src="js/gl-matrix-min.js"></script>
         <script src="js/preloadjs-0.6.2.min.js"></script>
         <script src="js/webgl-obj-loader.js"></script>
-        <script src="./global.js"></script>
         <script src="./webgl.js"></script>
         <script src="./viewer.js"></script>
 
@@ -62,7 +62,7 @@
         <script src="./js/camera_stream.js"></script>
         <script src="./js/helper_information.js"></script>
         <script>
-            var drawFeaturePoints = false;
+            var drawFeaturePoints = true;
             var vid = $('#videoel')[0];
             init_camera_stream(vid);
 

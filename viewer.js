@@ -141,15 +141,11 @@ function getMVMatrix() {
         Object.keys(occluder_mapping).forEach(function (key) {
             requestData['imgpoints'].push(positions[key]);
             requestData['objpoints'].push(occluder_mapping[key]);
-        });
-
-        var canvas = $("#clmtrackerCanvas");
-        requestData['width'] = canvas.width();
-        requestData['height'] = canvas.height();
-        // requestData['fx'] = 600;
-        // requestData['fy'] = 600;
-        // requestData['cx'] = 300;
-        // requestData['cy'] = 200;
+        })
+        requestData['fx'] = 600;
+        requestData['fy'] = 600;
+        requestData['cx'] = 300;
+        requestData['cy'] = 200;
 
         $.ajax({
             async: true,
