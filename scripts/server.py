@@ -33,6 +33,17 @@ def hello():
                                          np.array(imgpoints).astype('float32'), 
                                          np.array(cameraMatrix).astype('float32'),
                                          None)[-2:]
+    """
+    rotation1, translation1, inline = cv2.solvePnPRansac(np.array(objpoints).astype('float32'), 
+                                                         np.array(imgpoints).astype('float32'), 
+                                                         np.array(cameraMatrix).astype('float32'),
+                                                         None,
+                                                )
+    """
+    # print("rotation from pnp: ", rotation)
+    # print("rotation from pnpRansac: ", rotation1)
+    # print("translation from pnp: ", translation)
+    # print("translation from pnpRansac: ", translation1)
     return json.dumps({"translation" : translation.tolist(), "rotation" : rotation.tolist()})
 
 if __name__ == "__main__":

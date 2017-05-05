@@ -126,7 +126,7 @@ function radianToDegree(r) {
 
 function getProjectionMatrix() {
     var projMat = mat4.create();
-    mat4.perspective(projMat, 70, 800.0 / 600.0, 0.01, 2000.0);
+    mat4.perspective(projMat, 70, 800.0 / 600.0, 0.01, 20000.0);
     return projMat;
 }
 
