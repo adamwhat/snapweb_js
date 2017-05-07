@@ -131,7 +131,6 @@ function getProjectionMatrix() {
 }
 
 function getMVMatrix() {
-    var numOfPoints = 5;
     if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() != false) {
         requestData = {};
         var positions = ctracker.getCurrentPosition();
@@ -159,13 +158,28 @@ function getMVMatrix() {
             },
             success: function (data) {
 
-                translateX = data["translation"][0][0];
-                translateY = data["translation"][1][0];
-                translateZ = data["translation"][2][0];
+                var newTranslateX = data["translation"][0][0];
+                var newTranslateY = data["translation"][1][0];
+                var newTranslateZ = data["translation"][2][0];
 
-                rotationX = data["rotation"][0][0];
-                rotationY = data["rotation"][1][0];
-                rotationZ = data["rotation"][2][0];
+                var newRotationX = data["rotation"][0][0];
+                var newRotationY = data["rotation"][1][0];
+                var newRotationZ = data["rotation"][2][0];
+
+                var latestTransformation = [newTranslateX, newTranslateY, newTranslateZ, newRotationX, newRotationY, newRotationZ];
+                if (isNewTransformationOutlier(latestTransformation)) {
+                    removedFrameCounter = removedFrameCounter + 1;
+                    console.log("Number of Outlier Transformation removed: " + removedFrameCounter);
+                    return;
+                }
+
+                translateX = newTranslateX;
+                translateY = newTranslateY;
+                translateZ = newTranslateZ;
+
+                rotationX = newRotationX;
+                rotationY = newRotationY;
+                rotationZ = newRotationZ;
             }
         });
     }
@@ -190,6 +204,24 @@ function getMVMatrix() {
     mat4.invert(result, M);
 
     return result;
+}
+
+function isNewTransformationOutlier(latestTransformation) {
+    const arrayColumn = (arr, n) => arr.map(x => x[n]);
+    if (transformationHistory.length > 50) {
+        for (var p = 0; p < latestTransformation.length; p++) {
+            var existingMean = math.mean(arrayColumn(transformationHistory, p));
+            var existingStd = math.std(arrayColumn(transformationHistory, p));
+            var actualError = math.abs(latestTransformation[p] - existingMean);
+            if (math.abs(latestTransformation[p] - existingMean) > (existingStd*10.0)) {
+                console.log("Error-to-STD ratio: " + actualError/existingStd)
+                return true;
+            }
+        }
+        transformationHistory.shift();
+    }
+    transformationHistory.push(latestTransformation);
+    return false
 }
 
 function runWebGL(meshes, textImg) {
