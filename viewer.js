@@ -1,3 +1,14 @@
+var objStr = "occluder";
+var program;
+var texture;
+var obj;
+var flowers = "flowers1";
+var face = "occluder";
+
+$("#filter").change(function () {
+    objStr = $("#filter").val();
+});
+
 function createShape(gl, meshdata) {
     var shape = {};
 
@@ -27,16 +38,14 @@ function createShape(gl, meshdata) {
     return shape;
 }
 
-function drawShape(gl, shape, program, Mcam, Mproj, texture) {
+function drawFlowers(gl, shape, program, Mcam, Mproj, texture) {
     gl.useProgram(program);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
     var positionLocation = gl.getAttribLocation(program, "vert_position");
     gl.enableVertexAttribArray(positionLocation);
     gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
-    // var normalsLocation = gl.getAttribLocation(program, "normal");
-    // gl.enableVertexAttribArray(normalsLocation);
-    // gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 8, 4 * 3);
+
     var uvLocation = gl.getAttribLocation(program, "uv");
     gl.enableVertexAttribArray(uvLocation);
     gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 4 * 8, 4 * 6);
@@ -44,8 +53,7 @@ function drawShape(gl, shape, program, Mcam, Mproj, texture) {
 
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
-    // var textureIndexLocation = gl.getUniformLocation(program, "textureIndex");
-    // gl.uniform1f(textureIndexLocation, textureIndex);
+
     if (gl.getUniformLocation(program, "texture") != null) {
         // Step 1: Activate a "texture unit" of your choosing.
         gl.activeTexture(gl.TEXTURE0);
@@ -56,6 +64,30 @@ function drawShape(gl, shape, program, Mcam, Mproj, texture) {
         gl.uniform1i(textureLocation, 0);
     }
 
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+    gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+
+    gl.useProgram(null);
+}
+
+
+function drawFace(gl, shape, program, Mcam, Mproj, texture) {
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+    var positionLocation = gl.getAttribLocation(program, "vert_position");
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
+    var normalsLocation = gl.getAttribLocation(program, "normal");
+    gl.enableVertexAttribArray(normalsLocation);
+    gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 8, 4 * 3);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
     gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
@@ -64,6 +96,63 @@ function drawShape(gl, shape, program, Mcam, Mproj, texture) {
 
     gl.useProgram(null);
 }
+
+function drawShape(obj, gl, shape, program, Mcam, Mproj, texture) {
+    switch (obj) {
+        case flowers:
+            drawFlowers(gl, shape, program, Mcam, Mproj, texture);
+            break;
+        case face:
+            drawFace(gl, shape, program, Mcam, Mproj, texture);
+            break;
+        default:
+            console.log(obj + "is not a valid filter");
+            break;
+    }
+
+}
+
+// function drawShape(gl, shape, program, Mcam, Mproj, texture) {
+//     gl.useProgram(program);
+
+//     gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+//     var positionLocation = gl.getAttribLocation(program, "vert_position");
+//     gl.enableVertexAttribArray(positionLocation);
+//     gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
+//     if (gl.getAttribLocation(program, "normal") != null && objStr == "occluder") {
+//         var normalsLocation = gl.getAttribLocation(program, "normal");
+//         gl.enableVertexAttribArray(normalsLocation);
+//         gl.vertexAttribPointer(normalsLocation, 3, gl.FLOAT, false, 4 * 8, 4 * 3);
+//     }
+//     if (objStr == "flowers1") {
+//         var uvLocation = gl.getAttribLocation(program, "uv");
+//         gl.enableVertexAttribArray(uvLocation);
+//         gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 4 * 8, 4 * 6);
+//     }
+//     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+//     gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
+//     gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
+//     // var textureIndexLocation = gl.getUniformLocation(program, "textureIndex");
+//     // gl.uniform1f(textureIndexLocation, textureIndex);
+//     if (gl.getUniformLocation(program, "texture") != null && objStr == "flowers1") {
+//         // Step 1: Activate a "texture unit" of your choosing.
+//         gl.activeTexture(gl.TEXTURE0);
+//         // Step 2: Bind the texture you want to use.
+//         gl.bindTexture(gl.TEXTURE_2D, texture);
+//         // Step 3: Set the uniform to the "index" of the texture unit you just activated.
+//         var textureLocation = gl.getUniformLocation(program, "texture");
+//         gl.uniform1i(textureLocation, 0);
+//     }
+
+
+//     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+//     gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+//     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+
+//     gl.useProgram(null);
+// }
 
 function initText(gl, textImg) {
     // Step 1: Create the texture object.
@@ -87,15 +176,28 @@ function glEnv(meshes, textImg) {
 
     gl.depthFunc(gl.LESS);
     gl.enable(gl.DEPTH_TEST);
-
-    var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
-    var texture = initText(gl, textImg);
-
-    // var occluder = meshes.occluder;
-    var flowers1 = meshes.flowers1;
-    var shape = createShape(gl, flowers1);
+    var flowers_shape = createShape(gl, meshes.flowers1);
+    var occluder_shape = createShape(gl, meshes.occluder);
 
     function drawFrame(Mcam, Mproj) {
+        var program;
+        var texture;
+        var obj;
+        var shape;
+        if (objStr === flowers) {
+            shape = flowers_shape;
+            program = createGlslProgram(gl, 
+                flowers + "VertexShader", 
+                flowers + "FragmentShader");
+            texture = initText(gl, textImg);
+            obj = meshes[objStr];
+        } else if (objStr === face) {
+            shape = occluder_shape;
+            program = createGlslProgram(gl, 
+                face + "VertexShader", 
+                face + "FragmentShader");
+            obj = meshes[objStr];
+        }
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.BLEND);
         gl.useProgram(program);
@@ -103,16 +205,13 @@ function glEnv(meshes, textImg) {
         gl.clearColor(0, 0, 0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        drawShape(gl, shape, program, Mcam, Mproj, texture);
+        drawShape(objStr, gl, shape, program, Mcam, Mproj, texture);
 
         gl.useProgram(null);
     }
 
     return {
-        shape: shape,
         drawFrame: drawFrame,
-        // occluder: occluder,
-        flowers1: flowers1,
     };
 }
 
