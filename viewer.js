@@ -244,8 +244,8 @@ window.onload = function () {
     var textImg = new Image();
     textImg.onload = function() {
         OBJ.downloadMeshes({
-        'occluder': 'data/occluder.obj',
-        'flowers1': 'data/flowers1.obj',
+        'occluder': 'data/occluder_n.obj',
+        'flowers1': 'data/flowers1_n.obj',
         }, function(meshes) {
             runWebGL(meshes, textImg);
         });
