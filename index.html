@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Face tracker</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="./styles/index.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    </head>
+    <body>
+    <table id="controltable" class="table table-bordered">
+        <tr>
+            <th width="40%">Facial Tracking Position</th>
+            <th>
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="options" id="displayFacialTracing" autocomplete="off" checked> Display
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" name="options" id="hideFacialTracing" autocomplete="off"> Hide
+                    </label>
+                </div>
+            </th>
+        </tr>
+        <tr>
+            <th width="40%">Sticker Type</th>
+            <td></td>
+        </tr>
+    </table>
+    <script id="vertexShader" type="x-shader/x-vertex">
+                uniform mat4 Mproj;
+                uniform mat4 Mcam;
+
+                attribute vec2 uv;
+                attribute vec3 vert_position;
+                // will generate warning because normal is not used now
+                // attribute vec3 normal;
+
+                varying vec2 geom_texCoord;
+
+                void main() {
+                    gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                    geom_texCoord = uv;
+                }
+
+
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+                precision highp float;
+
+                varying vec2 geom_texCoord;
+
+                uniform sampler2D texture;
+
+                void main() {
+                    gl_FragColor = texture2D(texture, geom_texCoord);
+                }
+
+    </script>
+    <script src="./js/model/model_pca_20_svm.js"></script>
+    <script src="./global.js"></script>
+    <script src="./js/occluder_mapping.js"></script>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/gl-matrix-min.js"></script>
+    <script src="js/preloadjs-0.6.2.min.js"></script>
+    <script src="js/webgl-obj-loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.12.2/math.js" type="text/javascript"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="./webgl.js"></script>
+    <script src="./viewer.js"></script>
+    <script src="./js/webgazer.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/control.js"></script>
+    <script>
+        window.onload = function () {
+            webgazer.setRegression('ridge') /* currently must set regression and tracker */
+                .setTracker('clmtrackr')
+                .setGazeListener(function (data, clock) {
+                    //   console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
+                    //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
+                })
+                .begin()
+                .showPredictionPoints(false);
+            /* shows a square every 100 milliseconds where current prediction is */
+
+            var width = 600;
+            var height = 400;
+            var topDist = '20%';
+            var leftDist = '35%';
+
+            var setup = function () {
+                var video = document.getElementById('webgazerVideoFeed');
+                video.style.display = 'block';
+                setupCanvasStyle(video, true);
+                webgazer.params.imgWidth = width;
+                webgazer.params.imgHeight = height;
+
+                var overlay = document.createElement('canvas');
+                overlay.id = 'overlay';
+                setupCanvasStyle(overlay, true);
+                document.body.appendChild(overlay);
+
+                var stickerOverlay = document.createElement('canvas');
+                stickerOverlay.id = 'webglCanvas';
+                setupCanvasStyle(stickerOverlay, false);
+                document.body.appendChild(stickerOverlay);
+
+                ctracker = webgazer.getTracker().clm;
+
+                function drawLoop() {
+                    requestAnimFrame(drawLoop);
+                    overlay.getContext('2d').clearRect(0, 0, width, height);
+                    if (ctracker.getCurrentPosition()) {
+                        ctracker.draw(overlay);
+                    }
+                }
+
+                drawLoop();
+            };
+
+            function setupCanvasStyle(element, shouldFlip) {
+                element.style.position = 'absolute';
+                element.style.top = topDist;
+                element.style.left = leftDist;
+                element.width = width;
+                element.height = height;
+                element.style.margin = '0px';
+                if (shouldFlip) {
+                    element.style.transform = 'scaleX(-1)';
+                    element.style.filter = 'fliph';
+                }
+            }
+
+            function init() {
+                if (webgazer.isReady()) {
+                    setup();
+                    initWebGlCanvas();
+                } else {
+                    setTimeout(init, 100);
+                }
+            }
+
+            init();
+        };
+
+
+        window.onbeforeunload = function () {
+//            webgazer.end(); //Uncomment if you want to save the data even if you reload the page.
+            window.localStorage.clear(); //Comment out if you want to save data across different sessions
+        }
+    </script>
+    </body>
+</html>
