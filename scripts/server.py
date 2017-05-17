@@ -9,10 +9,9 @@ CORS(app)
 
 @app.route("/solvepnp", methods=['GET', 'POST'])
 def hello():
-    # print(request.data)
-    # print(type(request.data))
     data = json.loads(request.data.decode("utf-8"))
     idxs = np.array([0,1,5,6])
+    # idxs = np.array(range(data['imgpoints']))
     imgpoints = np.array(data['imgpoints']).astype('float32')[idxs].reshape(len(idxs), 1, 2)
     objpoints = np.array(data['objpoints']).astype('float32')[idxs].reshape(len(idxs), 1, 3)
 
@@ -32,7 +31,7 @@ def hello():
                     [0,  0, 1.0]]
     rotation, translation = cv2.solvePnP(objpoints, imgpoints,
                                          np.array(cameraMatrix).astype('float32'),
-                                         None, flags=cv2.CV_P3P)[-2:]
+                                         None, flags=cv2.SOLVEPNP_P3P)[-2:]
     """
     rotation1, translation1, inline = cv2.solvePnPRansac(np.array(objpoints).astype('float32'), 
                                                          np.array(imgpoints).astype('float32'), 
