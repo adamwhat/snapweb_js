@@ -29,7 +29,7 @@ def hello():
     cameraMatrix = [[fx, 0, cx],
                     [0, fy, cy],
                     [0,  0, 1.0]]
-    rotation, translation = cv2.solvePnP(objpoints, imgpoints,
+    rotationVec, translation = cv2.solvePnP(objpoints, imgpoints,
                                          np.array(cameraMatrix).astype('float32'),
                                          None, flags=cv2.SOLVEPNP_P3P)[-2:]
     """
@@ -39,6 +39,8 @@ def hello():
                                                          None,
                                                 )
     """
+    rotation, _ = cv2.Rodrigues(rotationVec)
+    rotation = np.array(rotation)
     # print("rotation from pnp: ", rotation)
     # print("rotation from pnpRansac: ", rotation1)
     # print("translation from pnp: ", translation)
