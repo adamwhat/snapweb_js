@@ -8,7 +8,7 @@ var translateX = 0.0;
 var translateY = 35.0;
 var translateZ = 250.0;
 
-var transformationHistory = [];
+var latestTransformation = [];
 
 var fps = 30;
 var removedFrameCounter = 0;

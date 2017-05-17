@@ -206,22 +206,17 @@ function getMVMatrix() {
     return result;
 }
 
-function isNewTransformationOutlier(latestTransformation) {
-    const arrayColumn = (arr, n) => arr.map(x => x[n]);
-    if (transformationHistory.length > 50) {
+function isNewTransformationOutlier(newTransformation) {
+    if (latestTransformation.length > 0) {
         for (var p = 0; p < latestTransformation.length; p++) {
-            var existingMean = math.mean(arrayColumn(transformationHistory, p));
-            var existingStd = math.std(arrayColumn(transformationHistory, p));
-            var actualError = math.abs(latestTransformation[p] - existingMean);
-            if (math.abs(latestTransformation[p] - existingMean) > (existingStd*10.0)) {
-                console.log("Error-to-STD ratio: " + actualError/existingStd)
+            var transformationDiffBetweenFrame = math.abs(newTransformation[p] - latestTransformation[p])
+            if (transformationDiffBetweenFrame > 500.0) {
                 return true;
             }
         }
-        transformationHistory.shift();
     }
-    transformationHistory.push(latestTransformation);
-    return false
+    latestTransformation = newTransformation
+    return false;
 }
 
 function runWebGL(meshes, textImg) {
