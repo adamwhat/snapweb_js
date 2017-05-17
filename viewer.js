@@ -259,6 +259,14 @@ function glEnv(meshes, textImg) {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.BLEND);
         gl.useProgram(program);
+        gl.canvas.width = webglCanvas.width();
+        gl.canvas.height = webglCanvas.height();
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        $(window).resize(function () {
+            gl.canvas.width = webglCanvas.width();
+            gl.canvas.height = webglCanvas.height();
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        });
 
         gl.clearColor(0, 0, 0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -283,7 +291,7 @@ function radianToDegree(r) {
 
 function getProjectionMatrix() {
     var projMat = mat4.create();
-    mat4.perspective(projMat, 70, 800.0 / 600.0, 0.01, 20000.0);
+    mat4.perspective(projMat, 70, webglCanvas.width()/webglCanvas.height(), 0.01, 20000.0);
     return projMat;
 }
 
@@ -299,10 +307,10 @@ function getMVMatrix() {
             requestData['imgpoints'].push(positions[key]);
             requestData['objpoints'].push(occluder_mapping[key]);
         })
-        requestData['fx'] = 600;
-        requestData['fy'] = 600;
-        requestData['cx'] = 300;
-        requestData['cy'] = 200;
+        requestData['fx'] = webglCanvas.width();
+        requestData['fy'] = webglCanvas.width();
+        requestData['cx'] = webglCanvas.width()/2.0;
+        requestData['cy'] = webglCanvas.height()/2.0;
 
         $.ajax({
             async: true,
