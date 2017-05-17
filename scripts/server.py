@@ -41,13 +41,13 @@ def hello():
     """
     rotation, _ = cv2.Rodrigues(rotationVec)
     rotation = np.array(rotation)
-    # print("rotation from pnp: ", rotation)
+    print("rotation from pnp: ", rotation)
     # print("rotation from pnpRansac: ", rotation1)
     # print("translation from pnp: ", translation)
     # print("translation from pnpRansac: ", translation1)
-    dst, _ = cv2.Rodrigues(rotation)
+    # dst, _ = cv2.Rodrigues(rotation)
     # print rotation, dst
-    return json.dumps({"translation" : translation.tolist(), "rotation" : dst.tolist()})
+    return json.dumps({"translation" : translation.tolist(), "rotation" : rotation.tolist()})
 
 if __name__ == "__main__":
     app.run(port=9999)

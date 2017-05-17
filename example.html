@@ -12,7 +12,7 @@
             <div id="container" class="relative">
                 <video id="videoel" class="display invert" width="600" height="400" preload="auto" loop></video>
                 <canvas id="clmtrackerCanvas" class ="display invert absolute" width="600" height="400"></canvas>
-                <canvas id="webglCanvas" class ="display absolute invert" width="600" height="400"></canvas>
+                <canvas id="webglCanvas" class ="display absolute" width="600" height="400"></canvas>
             </div>
             <div class="relative">
                 <p>Printing coordinates of the first 10 points in facial features:</p>
@@ -37,6 +37,7 @@
             varying vec2 geom_texCoord;
 
             void main() {
+
                 gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
                 geom_texCoord = uv;
             }
@@ -87,7 +88,7 @@
 
         <script src="./js/utils.js"></script>
         <script src="./js/clmtrackr.js"></script>
-        <script src="./js/model_pca_20_svm.js"></script>
+        <script src="./js/model/model_pca_20_svm.js"></script>
         <script src="./js/camera_stream.js"></script>
         <script src="./js/helper_information.js"></script>
         <script src="./viewer.js"></script>
