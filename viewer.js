@@ -253,7 +253,7 @@ function getMVMatrix() {
             requestData['objpoints'].push(occluder_mapping[key]);
         })
         requestData['fx'] = 600;
-        requestData['fy'] = 600;
+        requestData['fy'] = 400;
         requestData['cx'] = 300;
         requestData['cy'] = 200;
 

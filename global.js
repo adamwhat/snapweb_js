@@ -16,3 +16,13 @@ var ctracker;
 
 var fps = 30;
 var removedFrameCounter = 0;
+
+function getMatElement(m, x, y, size) {
+    return m[x*size + y];
+}
+
+function assert(condition, message) {
+    if (!condition) {
+        throw message || "Assertion failed";
+    }
+}
