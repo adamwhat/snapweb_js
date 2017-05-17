@@ -1,9 +1,3 @@
-var objStr = "occluder";
-var program;
-var texture;
-var obj;
-var flowers = "flowers1";
-var face = "occluder";
 
 $("#filter").change(function () {
     objStr = $("#filter").val();

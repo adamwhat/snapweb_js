@@ -13,7 +13,13 @@ var translateZ = 250.0;
 
 var latestTransformation = [];
 var ctracker;
-var rotationMatrix;
 
 var fps = 30;
-var removedFrameCounter = 0;
+
+var objStr = "occluder";
+var program;
+var texture;
+var obj;
+var flowers = "flowers1";
+var face = "occluder";
+var showFaceContour = true;

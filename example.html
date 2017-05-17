@@ -29,6 +29,11 @@
             </select>
         </div>
         <div class="container">
+            <div class="form-group">
+                <label>Face Contour</label>
+                <label class="radio-inline"><input type="radio" name="facecontour" value="show">Show</label>
+                <label class="radio-inline"><input type="radio" name="facecontour" value="hide">Hide</label>
+            </div>
             <div class="row">
                 <div class="col-md-12">
                     <div class="well">
@@ -43,8 +48,8 @@
                             <div class="carousel-inner">
                                 <div class="item active">
                                     <div class="row-fluid">
-                                        <div id = "blah" class="col-md-3"><a href="#x" class="thumbnail" value="facemodel"><img src="./data/face_model_preview.png" alt="Image" style="max-width:100%;" /></a></div>
-                                        <div class="col-md-3"><a href="#x" class="thumbnail" value="flower"><img src="./data/flower_preview.png" alt="Image" style="max-width:100%;" /></a></div>
+                                        <div class="col-md-3"><a id = "blah" href="#x" class="thumbnail" data-stickername="occluder"><img src="./data/face_model_preview.png" alt="Image" style="max-width:100%;" /></a></div>
+                                        <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="flowers1"><img src="./data/flower_preview.png" alt="Image" style="max-width:100%;" /></a></div>
                                         <div class="col-md-3"><a href="#x" class="thumbnail"><img src="http://placehold.it/250x250" alt="Image" style="max-width:100%;" /></a></div>
                                         <div class="col-md-3"><a href="#x" class="thumbnail"><img src="http://placehold.it/250x250" alt="Image" style="max-width:100%;" /></a></div>
                                     </div><!--/row-fluid-->
@@ -152,7 +157,9 @@
             var cc = canvasInput.getContext('2d');
             function drawLoop() {
                 cc.clearRect(0, 0, canvasInput.width, canvasInput.height);
-                if ($("#faceContour").val() == "1"){ctracker.draw(canvasInput);}
+                if (showFaceContour){
+                    ctracker.draw(canvasInput);
+                }
                 requestAnimationFrame(drawLoop);
             }
             drawLoop();
