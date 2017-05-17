@@ -46,7 +46,7 @@
     </ul>
 </div>
 
-<script id="vertexShader" type="x-shader/x-vertex">
+<script id="occluderVertexShader" type="x-shader/x-vertex">
     uniform mat4 Mproj;
     uniform mat4 Mcam;
     // uniform float textureIndex;
@@ -65,7 +65,7 @@
     }
 </script>
 
-<script id="fragmentShader" type="x-shader/x-fragment">
+<script id="occluderFragmentShader" type="x-shader/x-fragment">
     precision highp float;
     varying vec4 geom_texCoord;
     // uniform sampler2D floorTexture; // 0
@@ -101,6 +101,7 @@
 </script>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="./global.js"></script>
 <script src="js/jquery-3.1.1.min.js"></script>
 <script src="js/jquery-ui.min.js"></script>
 <script src="js/gl-matrix-min.js"></script>
@@ -108,5 +109,8 @@
 <script src="js/webgl-obj-loader.js"></script>
 <script src="./webgl.js"></script>
 <script src="./viewer.js"></script>
+<script>
+    initWebGlCanvas();
+</script>
 </body>
 </html>

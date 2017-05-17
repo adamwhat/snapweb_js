@@ -13,6 +13,7 @@ var translateZ = 250.0;
 
 var latestTransformation = [];
 var ctracker;
+var rotationMatrix;
 
 var fps = 30;
 var removedFrameCounter = 0;
