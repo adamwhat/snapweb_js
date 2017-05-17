@@ -43,7 +43,9 @@ def hello():
     # print("rotation from pnpRansac: ", rotation1)
     # print("translation from pnp: ", translation)
     # print("translation from pnpRansac: ", translation1)
-    return json.dumps({"translation" : translation.tolist(), "rotation" : rotation.tolist()})
+    dst, _ = cv2.Rodrigues(rotation)
+    # print rotation, dst
+    return json.dumps({"translation" : translation.tolist(), "rotation" : dst.tolist()})
 
 if __name__ == "__main__":
     app.run(port=9999)
