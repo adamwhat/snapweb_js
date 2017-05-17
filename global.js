@@ -1,9 +1,5 @@
 var env;
 
-var rotationX = 0.0;
-var rotationY = 0.0;
-var rotationZ = 0.0;
-var rotationMatrix = mat4.create();
 
 var transMatrix = mat4.create();
 

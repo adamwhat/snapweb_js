@@ -7,10 +7,21 @@
 }
 
 .display {
-    top: 0px;
+    top : 0px;
     left: 0px;
-    width: 40%;
-    height: 20%;
+}
+
+.videocontainer {
+    width: 600px;
+    height: 400px;
+    margin-left: 40%;
+}
+
+.center {
+    margin: auto;
+    width: 50%;
+    border: 3px solid grey;
+    padding: 10px;
 }
 
 .invert {

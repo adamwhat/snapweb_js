@@ -245,7 +245,7 @@ function getMVMatrix() {
                     0, 0, -1, 0,
                     0, 0, 0, 1,
                 );
-                mat4.mul(transMatrix, cvToGl, transMatrix); 
+                mat4.mul(transMatrix, cvToGl, transMatrix);
                 mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
 
                 mat4.mul(transMatrix, transMatrix, T);

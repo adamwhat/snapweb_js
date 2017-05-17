@@ -8,30 +8,16 @@
     </head>
     <body>
         <div id="content">
-            <h2>Example</h2>
-
-            <div id="container" class="relative">
+            <div id="videocontainer" class="videocontainer relative">
                 <video id="videoel" class="display invert" width="600" height="400" preload="auto" loop></video>
                 <canvas id="clmtrackerCanvas" class ="display invert absolute" width="600" height="400"></canvas>
                 <canvas id="webglCanvas" class ="display absolute" width="600" height="400"></canvas>
             </div>
-            <div class="relative">
-                <p>Printing coordinates of the first 10 points in facial features:</p>
-                <p id="positions"></p>
-            </div>
-            <select id="filter">
-                <option value="occluder">Face Model</option>
-                <option value="flowers1">Flower Wreath</option>
-            </select>
-            <select id="faceContour">
-                <option value="1">show face contour</option>
-                <option value="0">hide face contour</option>
-            </select>
         </div>
-        <div class="container">
-            <div class="form-group">
+        <div class="container" style="padding-top: 5%">
+            <div class="form-group center">
                 <label>Face Contour</label>
-                <label class="radio-inline"><input type="radio" name="facecontour" value="show">Show</label>
+                <label class="radio-inline"><input type="radio" name="facecontour" value="show" checked="true">Show</label>
                 <label class="radio-inline"><input type="radio" name="facecontour" value="hide">Hide</label>
             </div>
             <div class="row">
@@ -137,7 +123,6 @@
         <script src="./js/clmtrackr.js"></script>
         <script src="./js/model/model_pca_20_svm.js"></script>
         <script src="./js/camera_stream.js"></script>
-        <script src="./js/helper_information.js"></script>
         <script src="./viewer.js"></script>
         <script src="./js/control.js"></script>
 
@@ -150,7 +135,6 @@
             ctracker.init(pModel);
             ctracker.start(vid);
 
-            init_helper_information($('#positions')[0]);
 
             // Draw feature points
             var canvasInput = $('#clmtrackerCanvas')[0];
