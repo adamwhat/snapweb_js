@@ -12,8 +12,9 @@ def hello():
     # print(request.data)
     # print(type(request.data))
     data = json.loads(request.data.decode("utf-8"))
-    imgpoints = data['imgpoints']
-    objpoints = data['objpoints']
+    idxs = np.array([0,1,5,6])
+    imgpoints = np.array(data['imgpoints']).astype('float32')[idxs].reshape(len(idxs), 1, 2)
+    objpoints = np.array(data['objpoints']).astype('float32')[idxs].reshape(len(idxs), 1, 3)
 
     fx = data['fx']
     fy = data['fy']
@@ -29,10 +30,9 @@ def hello():
     cameraMatrix = [[fx, 0, cx],
                     [0, fy, cy],
                     [0,  0, 1.0]]
-    rotation, translation = cv2.solvePnP(np.array(objpoints).astype('float32'), 
-                                         np.array(imgpoints).astype('float32'), 
+    rotation, translation = cv2.solvePnP(objpoints, imgpoints,
                                          np.array(cameraMatrix).astype('float32'),
-                                         None)[-2:]
+                                         None, flags=cv2.CV_P3P)[-2:]
     """
     rotation1, translation1, inline = cv2.solvePnPRansac(np.array(objpoints).astype('float32'), 
                                                          np.array(imgpoints).astype('float32'), 
