@@ -9,6 +9,7 @@ var translateY = 35.0;
 var translateZ = 250.0;
 
 var latestTransformation = [];
+var ctracker;
 
 var fps = 30;
 var removedFrameCounter = 0;

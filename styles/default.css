@@ -1,25 +1,17 @@
-#container {
+.absolute {
+    position: absolute;
+}
+
+.relative {
     position: relative;
 }
 
-#videoel {
-    -o-transform : scaleX(-1);
-    -webkit-transform : scaleX(-1);
-    transform : scaleX(-1);
-    -ms-filter : fliph; /*IE*/
-    filter : fliph; /*IE*/
-}
-
-#webglCanvas {
-    position: absolute;
+.display {
     top: 0px;
     left: 0px;
 }
 
-#overlay, #webgl, #clmtrackerCanvas {
-    position: absolute;
-    top: 0px;
-    left: 0px;
+.invert {
     -o-transform : scaleX(-1);
     -webkit-transform : scaleX(-1);
     transform : scaleX(-1);

@@ -235,13 +235,13 @@ function updateWebGL() {
     }, 1000 / fps);
 }
 
-window.onload = function () {
+function initWebGlCanvas() {
     var textImg = new Image();
-    textImg.onload = function() {
+    textImg.onload = function () {
         OBJ.downloadMeshes({
-        'occluder': 'data/occluder_n.obj',
-        'flowers1': 'data/flowers1_n.obj',
-        }, function(meshes) {
+            'occluder': 'data/occluder_n.obj',
+            'flowers1': 'data/flowers1_n.obj',
+        }, function (meshes) {
             runWebGL(meshes, textImg);
         });
     };
