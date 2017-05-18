@@ -183,6 +183,39 @@ function drawEyes(gl, shape, program, Mcam, Mproj, texture) {
 
 }
 
+function drawFrenchman(gl, shape, program, Mcam, Mproj, texture) {
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+    var positionLocation = gl.getAttribLocation(program, "vert_position");
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
+
+    var uvLocation = gl.getAttribLocation(program, "uv");
+    gl.enableVertexAttribArray(uvLocation);
+    gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 4 * 8, 4 * 6);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
+
+    if (gl.getUniformLocation(program, "texture") != null) {
+        // Step 1: Activate a "texture unit" of your choosing.
+        gl.activeTexture(gl.TEXTURE2);
+        // Step 2: Bind the texture you want to use.
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // Step 3: Set the uniform to the "index" of the texture unit you just activated.
+        var textureLocation = gl.getUniformLocation(program, "texture");
+        gl.uniform1i(textureLocation, 2);
+    }
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+    gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    gl.useProgram(null);
+}
+
 function drawShape(obj, gl, shape, program, Mcam, Mproj, texture) {
     switch (obj) {
         case flowers:
@@ -193,6 +226,9 @@ function drawShape(obj, gl, shape, program, Mcam, Mproj, texture) {
             break;
         case eyes:
             drawEyes(gl, shape, program, Mcam, Mproj, texture);
+            break;
+        case frenchman:
+            drawFrenchman(gl, shape, program, Mcam, Mproj, texture);
             break;
         default:
             console.log(obj + "is not a valid filter");
@@ -222,21 +258,23 @@ function glEnv(meshes, queue) {
     var gl = initializeWebGL("webglCanvas");
     var flowersText = initText(gl, queue.getResult(flowers, false));
     var eyesText = initText(gl, queue.getResult(eyes, false));
+    var frenchmanText = initText(gl, queue.getResult(frenchman, false));
     var textImg = {
         flowers: flowersText,
         eyes: eyesText,
+        frenchman: frenchmanText
     }
     console.log(textImg);
     gl.depthFunc(gl.LESS);
     gl.enable(gl.DEPTH_TEST);
     var flowers_shape = createShape(gl, meshes.flowers1);
     var occluder_shape = createShape(gl, meshes.occluder);
+    var frenchman_shape = createShape(gl, meshes.frenchman);
 
     function drawFrame(Mcam, Mproj) {
         var program;
         var texture;
         var shape;
-        var cornerCount = 32;
         // var flowersText = initText(gl, textImg[flowers]);
         // var eyesText = initText(gl, textImg[eyes]);
 
@@ -259,6 +297,13 @@ function glEnv(meshes, queue) {
                     eyes + "VertexShader", 
                     eyes + "FragmentShader");
                 texture = textImg.eyes;
+                break;
+            case frenchman:
+                shape = frenchman_shape;
+                program = createGlslProgram(gl,
+                    frenchman + "VertexShader",
+                    frenchman + "FragmentShader");
+                texture = textImg.frenchman;
                 break;
             default:
                 console.log(objStr + "is not a valid filter");
@@ -419,6 +464,7 @@ function initWebGlCanvas() {
         OBJ.downloadMeshes({
             'occluder': 'data/occluder_n.obj',
             'flowers1': 'data/flowers1_n.obj',
+            'frenchman': 'data/frenchman_hat.obj'
         }, function(meshes) {
             runWebGL(meshes, queue);
         });
@@ -433,6 +479,10 @@ function initWebGlCanvas() {
             id: eyes,
             src: "data/crazy_eye.png"
         },
+        {
+            id: frenchman,
+            src: "data/hat_diffuse.png"
+        }
     ]);
 
     // var textImg = new Image();

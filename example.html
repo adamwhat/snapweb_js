@@ -32,7 +32,7 @@
                                         <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="occluder"><img src="./data/face_model_effect.png" alt="Image" style="max-width:100%;" /></a></div>
                                         <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="flowers1"><img src="./data/flowers_effect.png" alt="Image" style="max-width:100%;" /></a></div>
                                         <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="crazyEyes"><img src="/data/crazy_eyes_effect.png" alt="Image" style="max-width:100%;" /></a></div>
-                                        <div class="col-md-3"><a href="#x" class="thumbnail"><img src="/data/frenchman_effect.png" alt="Image" style="max-width:100%;" /></a></div>
+                                        <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="frenchman"><img src="/data/frenchman_effect.png" alt="Image" style="max-width:100%;" /></a></div>
                                     </div><!--/row-fluid-->
                                 </div><!--/item-->
 
@@ -55,6 +55,33 @@
                 <option value="0">hide face contour</option>
             </select> -->
         </div>
+        <script id="frenchmanVertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
+
+            attribute vec2 uv;
+            attribute vec3 vert_position;
+
+            varying vec2 geom_texCoord;
+
+            void main() {
+
+                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                geom_texCoord = uv;
+            }
+        </script>
+
+        <script id="frenchmanFragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+
+            varying vec2 geom_texCoord;
+
+            uniform sampler2D texture;
+
+            void main() {
+                gl_FragColor = texture2D(texture, geom_texCoord);
+            }
+        </script>
         <script id="crazyEyesVertexShader" type="x-shader/x-vertex">
             uniform mat4 Mproj;
             uniform mat4 Mcam;

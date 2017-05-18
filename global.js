@@ -18,6 +18,7 @@ var flowers = "flowers1";
 var face = "occluder";
 var eyes = "crazyEyes";
 var face = "occluder";
+var frenchman = "frenchman";
 
 var showFaceContour = true;
 var webglCanvas;
