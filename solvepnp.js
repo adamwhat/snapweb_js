@@ -280,7 +280,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         // Centroids:
         var C_start = vec3.create(), C_end = vec3.create();
         for (var i = 0; i < 3; i++) {
-            C_end[i] = (getMatElement(M_end, 0, i, 3), + getMatElement(M_end, 1, i, 3) + getMatElement(M_end, 2, i, 3)) / 3.0;
+            C_end[i] = (getMatElement(M_end, 0, i, 3) + getMatElement(M_end, 1, i, 3) + getMatElement(M_end, 2, i, 3)) / 3.0;
         }
 
         C_start[0] = (X0 + X1 + X2) / 3.0;
@@ -290,13 +290,13 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         // Covariance matrix s: mat3
         var s = Array(9);
         for (var j = 0; j < 3; j++) {
-            s[0 * 3 + j] = (X0 * getMatElement(M_end, 0, j, 3) + X1 * getMatElement(M_end, 1, j, 3) + X2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[0];
-            s[1 * 3 + j] = (Y0 * getMatElement(M_end, 0, j, 3) + Y1 * getMatElement(M_end, 1, j, 3) + Y2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[1];
-            s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[2];
+            s[0 * 3 + j] = (X0 * getMatElement(M_end, 0, j, 3) + X1 * getMatElement(M_end, 1, j, 3) + X2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[0];
+            s[1 * 3 + j] = (Y0 * getMatElement(M_end, 0, j, 3) + Y1 * getMatElement(M_end, 1, j, 3) + Y2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[1];
+            s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[2];
         }
 
         var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
-        var W = new jsfeat.matrix_t(4, 1, jsfeat.F32_t | jsfeat.C1_t);
+        var W = new jsfeat.matrix_t(1, 4, jsfeat.F32_t | jsfeat.C1_t);
         var U = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
         var V = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
 
@@ -307,14 +307,35 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         Qs.data[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
         Qs.data[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
 
-        Qs.data[1 * 4 + 0] = Qs[0 * 4 + 1] = s[1 * 3 + 2] - s[2 * 3 + 1];
-        Qs.data[2 * 4 + 0] = Qs[0 * 4 + 2] = s[2 * 3 + 0] - s[0 * 3 + 2];
-        Qs.data[3 * 4 + 0] = Qs[0 * 4 + 3] = s[0 * 3 + 1] - s[1 * 3 + 0];
-        Qs.data[2 * 4 + 1] = Qs[1 * 4 + 2] = s[1 * 3 + 0] + s[0 * 3 + 1];
-        Qs.data[3 * 4 + 1] = Qs[1 * 4 + 3] = s[2 * 3 + 0] + s[0 * 3 + 2];
-        Qs.data[3 * 4 + 2] = Qs[2 * 4 + 3] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        Qs.data[1 * 4 + 0] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        Qs.data[2 * 4 + 0] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        Qs.data[3 * 4 + 0] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        Qs.data[2 * 4 + 1] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        Qs.data[3 * 4 + 1] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        Qs.data[3 * 4 + 2] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        Qs.data[0 * 4 + 1] = Qs.data[1 * 4 + 0];
+        Qs.data[0 * 4 + 2] = Qs.data[2 * 4 + 0];
+        Qs.data[0 * 4 + 3] = Qs.data[3 * 4 + 0];
+        Qs.data[1 * 4 + 2] = Qs.data[2 * 4 + 1];
+        Qs.data[1 * 4 + 3] = Qs.data[3 * 4 + 1];
+        Qs.data[2 * 4 + 3] = Qs.data[3 * 4 + 2];
 
-        jsfeat.linalg.svd_decompose(Qs, evs, U, V);
+
+        // Qs.data[1] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        // Qs.data[2] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        // Qs.data[3] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        // Qs.data[7] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        // Qs.data[8] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        // Qs.data[12] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        
+        // Qs.data[1] = Qs.data[4];
+        // Qs.data[2] = Qs.data[8];
+        // Qs.data[3] = Qs.data[12];
+        // Qs.data[6] = Qs.data[9];
+        // Qs.data[7] = Qs.data[13];
+        // Qs.data[11] = Qs.data[14];
+
+        jsfeat.linalg.svd_decompose(Qs, W, U, V);
         var evs = W.data;
         // Looking for the largest eigen value:
         var i_ev = 0;
@@ -370,7 +391,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         var n = 0;
         var real_roots = Array(4);
         for (var i = 0; i < 4; i++) {
-            if (roots[i].im - 0 < 0.000001) {
+            if (Math.abs(roots[i].im - 0) < 0.000001) {
                 real_roots[n] = roots[i].re;
                 n++;
             }
