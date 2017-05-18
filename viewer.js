@@ -316,11 +316,11 @@ function getMVMatrix() {
             imgpoints.push(positions[key]);
             objpoints.push(occluder_mapping[key]);
         })
-        // var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
+        var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
 
-        objpoints = [[0.0,0.0,0.0],[-62.1225319, 15.7540569, 0.819464564],[62.3174629, 15.7940502, 0.819983721],[-0.372639507, 16.4230633,  -36.5060043]];
-        imgpoints = [[463.423, 139.419],[158.196, 218.958],[775.287, 217.277],[440.247, 227.035]]
-        var data = PnPSolver(3844.44, 3841.06, 640.0, 380.0).solvePnP(objpoints, imgpoints);
+        // objpoints = [[0.0,0.0,0.0],[-62.1225319, 15.7540569, 0.819464564],[62.3174629, 15.7940502, 0.819983721],[-0.372639507, 16.4230633,  -36.5060043]];
+        // imgpoints = [[463.423, 139.419],[158.196, 218.958],[775.287, 217.277],[440.247, 227.035]]
+        // var data = PnPSolver(3844.44, 3841.06, 640.0, 380.0).solvePnP(objpoints, imgpoints);
         console.log(data);
         
         var newTranslateX = data["translation"][0];
