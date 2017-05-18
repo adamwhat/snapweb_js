@@ -21,3 +21,12 @@ var face = "occluder";
 
 var showFaceContour = true;
 var webglCanvas;
+function getMatElement(m, x, y, size) {
+    return m[x + y*size];
+}
+
+function assert(condition, message) {
+    if (!condition) {
+        throw message || "Assertion failed";
+    }
+}
