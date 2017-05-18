@@ -21,12 +21,41 @@
             <select id="filter">
                 <option value="occluder">Face Model</option>
                 <option value="flowers1">Flower Wreath</option>
+                <option value="crazyEyes">Crazy Eyes</option>
             </select>
             <select id="faceContour">
                 <option value="1">show face contour</option>
                 <option value="0">hide face contour</option>
             </select>
         </div>
+        <script id="crazyEyesVertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
+            uniform vec3 center;
+            uniform float radius;
+
+            attribute vec2 uv;
+            attribute vec3 vert_position;
+
+            varying vec2 geom_texCoord;
+
+            void main() {
+                gl_Position = Mproj * Mcam * vec4(vert_position + center, 1.0);
+                geom_texCoord = uv;
+            }
+        </script>
+
+        <script id="crazyEyesFragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+
+            varying vec2 geom_texCoord;
+
+            uniform sampler2D texture;
+
+            void main() {
+                gl_FragColor = texture2D(texture, geom_texCoord);
+            }
+        </script>
         <script id="flowers1VertexShader" type="x-shader/x-vertex">
             uniform mat4 Mproj;
             uniform mat4 Mcam;
@@ -91,6 +120,7 @@
         <script src="./js/model/model_pca_20_svm.js"></script>
         <script src="./js/camera_stream.js"></script>
         <script src="./js/helper_information.js"></script>
+        <script src="./js/preloadjs-0.6.2.min.js"></script>
         <script src="./viewer.js"></script>
 
         <script>
