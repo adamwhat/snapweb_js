@@ -1,0 +1,10 @@
+Quickstart:
+	* python scripts/run.py
+
+	Run the above line in the terminal and open browser. You will be able to see our project on localhost:8000. Note that it takes about 30 seconds to load the meshes.
+
+	* https://cs4621.herokuapp.com/
+	You can also visit this url to see our work.
+
+Overview:
+	This project recognizes human faces, find the transformation matrix between the world and the camera framework, and renders face filters on top of recognized face.

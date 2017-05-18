@@ -61,7 +61,6 @@ function drawFlowers(gl, shape, program, Mcam, Mproj, texture) {
     gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-
     gl.useProgram(null);
 }
 
@@ -275,8 +274,6 @@ function glEnv(meshes, queue) {
         var program;
         var texture;
         var shape;
-        // var flowersText = initText(gl, textImg[flowers]);
-        // var eyesText = initText(gl, textImg[eyes]);
 
         switch (objStr) {
             case flowers:
@@ -474,16 +471,5 @@ function initWebGlCanvas() {
             src: "data/hat_diffuse.png"
         }
     ]);
-
-    // var textImg = new Image();
-    // textImg.onload = function () {
-    //     OBJ.downloadMeshes({
-    //         'occluder': 'data/occluder_n.obj',
-    //         'flowers1': 'data/flowers1_n.obj',
-    //     }, function (meshes) {
-    //         runWebGL(meshes, textImg);
-    //     });
-    // };
-    // textImg.src = "data/flower_wreath.png";
 }
 
