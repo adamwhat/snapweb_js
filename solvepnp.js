@@ -2,44 +2,64 @@
  * Created by adamwang on 5/17/17.
  */
 
-function PnPSolver(fx, fy, cx, cy) {
-    this.fx = fx;
-    this.fy = fy;
-    this.cx = cx;
-    this.cy = cy;
-    this.inv_fx = 1.0 / fx;
-    this.inv_fy = 1.0 / fy;
-    this.cx_fx = cx / fx;
-    this.cy_fy = cy / fy;
+function PnPSolver(_fx, _fy, _cx, _cy) {
 
-    this.solvePnP = function (objPoints, imgPoints, cameraMatrix, _distCoeff) {
+    var fx = _fx;
+    var fy = _fy;
+    var cx = _cx;
+    var cy = _cy;
+    var inv_fx = 1.0 / fx;
+    var inv_fy = 1.0 / fy;
+    var cx_fx = cx / fx;
+    var cy_fy = cy / fy;
+
+    function solvePnP(objPoints, imgPoints) {
         /*
          objPoints: 4 * 3 matrix
          imgPoints: 4 * 2 matrix
-         cameraMatrix: 3 * 3 matrix
-         distCoeff: 4 * 1 matrix
          */
 
         var rvec = vec3.create();
         var tvec = vec3.create();
 
+
+        console.log(objPoints);
         assert(objPoints.length == 4);
         assert(imgPoints.length == 4);
+        assert(imgPoints.length == objPoints.length);
 
-        var fx = getMatElement(cameraMatrix, 0, 0, 3), fy = getMatElement(cameraMatrix, 1, 1, 3);
-        var cx = getMatElement(cameraMatrix, 0, 2, 3), cy = getMatElement(cameraMatrix, 1, 2, 3);
-
-        return false;
+        return solve4(
+            imgPoints[0][0] * fx + cx,
+            imgPoints[0][1] * fy + cy,
+            objPoints[0][0],
+            objPoints[0][1],
+            objPoints[0][2],
+            imgPoints[1][0] * fx + cx,
+            imgPoints[1][1] * fy + cy,
+            objPoints[1][0],
+            objPoints[1][1],
+            objPoints[1][2],
+            imgPoints[2][0] * fx + cx,
+            imgPoints[2][1] * fy + cy,
+            objPoints[2][0],
+            objPoints[2][1],
+            objPoints[2][2],
+            imgPoints[3][0] * fx + cx,
+            imgPoints[3][1] * fy + cy,
+            objPoints[3][0],
+            objPoints[3][1],
+            objPoints[3][2]
+        );
     };
 
-    this.solve4 = function (mu0, mv0, x0, y0, z0,
+    function solve4 (mu0, mv0, x0, y0, z0,
         mu1, mv1, x1, y1, z1,
         mu2, mv2, x2, y2, z2,
         mu3, mv3, x3, y3, z3) {
 
         // rs: array of matrix 3x3, ts: array of vec3
         var n, rs = Array(4), ts = Array(4);
-        [n, rs, ts] = this.solve3(mu0, mv0, x0, y0, z0,
+        [n, rs, ts] = solve3(mu0, mv0, x0, y0, z0,
             mu1, mv1, x1, y1, z1,
             mu2, mv2, x2, y2, z2);
 
@@ -63,7 +83,7 @@ function PnPSolver(fx, fy, cx, cy) {
         }
 
         var rotate = mat3.clone(rs[ns]);
-        var translate = var3.clone(ts[ns]);
+        var translate = vec3.clone(ts[ns]);
 
         // for(var i = 0; i < 9; i++) {
         //     rotate[i] = rs[ns][i];
@@ -72,27 +92,30 @@ function PnPSolver(fx, fy, cx, cy) {
         // for (var i = 0; i < 3; i++) {
         //     translate[i] = ts[ns][i];
         // }
-        return true;
+        return {
+            "rotation": rotate,
+            "translation": translate
+        }
     };
 
-    this.solve3 = function (mu0, mv0, x0, y0, z0,
-        mu1, mv1, x1, y1, z1,
-        mu2, mv2, x2, y2, z2) {
+    function solve3 (mu0, mv0, X0, Y0, Z0,
+        mu1, mv1, X1, Y1, Z1,
+        mu2, mv2, X2, Y2, Z2) {
 
         var mk0, mk1, mk2, norm;
 
-        mu0 = this.inv_fx * mu0 - this.cx_fx;
-        mv0 = this.inv_fy * mv0 - this.cy_fy;
+        mu0 = inv_fx * mu0 - cx_fx;
+        mv0 = inv_fy * mv0 - cy_fy;
         norm = Math.sqrt(mu0 * mu0 + mv0 * mv0 + 1.0);
         mk0 = 1.0 / norm; mu0 *= mk0; mv0 *= mk0;
 
-        mu1 = this.inv_fx * mu1 - this.cx_fx;
-        mv1 = this.inv_fy * mv1 - this.cy_fy;
+        mu1 = inv_fx * mu1 - cx_fx;
+        mv1 = inv_fy * mv1 - cy_fy;
         norm = Math.sqrt(mu1 * mu1 + mv1 * mv1 + 1);
         mk1 = 1.0 / norm; mu1 *= mk1; mv1 *= mk1;
 
-        mu2 = this.inv_fx * mu2 - this.cx_fx;
-        mv2 = this.inv_fy * mv2 - this.cy_fy;
+        mu2 = inv_fx * mu2 - cx_fx;
+        mv2 = inv_fy * mv2 - cy_fy;
         norm = Math.sqrt(mu2 * mu2 + mv2 * mv2 + 1);
         mk2 = 1.0 / norm; mu2 *= mk2; mv2 *= mk2;
 
@@ -110,6 +133,9 @@ function PnPSolver(fx, fy, cx, cy) {
         // length is Array(vec3 * 4, len = 4)
         var n, lengths = Array(4);
         [n, lengths] = solve_for_lengths(distances, cosines);
+
+        console.log("nbsol", n);
+        console.log("lenghts", lengths);
 
         var nb_solutions = 0;
         // resultR 4 * 3 * 3 (4 * mat3), resultT 4 * 3 (4 * mat3)
@@ -147,12 +173,12 @@ function PnPSolver(fx, fy, cx, cy) {
             nb_solutions++;
         }
 
-        return nb_solutions;
+        return [nb_solutions, resultR, resultT];
     };
 
     // distances[3], cosines[3]
     // return legnths[4][3]: vec3[4]
-    this.solve_for_lengths = function (distances, cosines) {
+    function solve_for_lengths(distances, cosines) {
         var p = cosines[0] * 2;
         var q = cosines[1] * 2;
         var r = cosines[2] * 2;
@@ -166,14 +192,14 @@ function PnPSolver(fx, fy, cx, cy) {
 
         // Check reality condition (the four points should not be coplanar)
         if (p2 + q2 + r2 - pqr - 1 == 0)
-            return 0;
+            return [0, null];
 
         var ab = a * b, a_2 = 2 * a;
 
         var A = -2 * b + b2 + a2 + 1 + ab * (2 - r2) - a_2;
 
         // Check reality condition
-        if (A == 0) return 0;
+        if (A == 0) return [0, null];
 
         var a_4 = 4 * a;
 
@@ -186,21 +212,21 @@ function PnPSolver(fx, fy, cx, cy) {
         var b0 = b * temp * temp;
         // Check reality condition
         if (b0 == 0)
-            return 0;
+            return [0, null];
 
         var real_roots = Array(4);
         var n, real_roots;
         [n, real_roots] = solve_deg4(A, B, C, D, E);
 
         if (n == 0)
-            return 0;
+            return [0, null];
 
         var nb_solutions = 0;
         var r3 = r2 * r, pr2 = p * r2, r3q = r3 * q;
         var inv_b0 = 1. / b0;
 
         // vec3[4]
-        lengths = Array(4);
+        var lengths = Array(4);
 
         // For each solution of x
         for (var i = 0; i < n; i++) {
@@ -233,7 +259,7 @@ function PnPSolver(fx, fy, cx, cy) {
             if (v <= 0)
                 continue;
 
-            var Z = distances[2] / sqrt(v);
+            var Z = distances[2] / Math.sqrt(v);
             var X = x * Z;
             var Y = y * Z;
 
@@ -245,11 +271,11 @@ function PnPSolver(fx, fy, cx, cy) {
             nb_solutions++;
         }
 
-        return nb_solutions;
+        return [nb_solutions, lengths];
     };
 
     // M_end: mat3
-    this.align = function (M_end, X0, Y0, Z0, X1, Y1, Z1, X2, Y2, Z2) {
+    function align(M_end, X0, Y0, Z0, X1, Y1, Z1, X2, Y2, Z2) {
 
         // Centroids:
         var C_start = vec3.create(), C_end = vec3.create();
@@ -338,7 +364,7 @@ function PnPSolver(fx, fy, cx, cy) {
 
     // return n: number of real roots
     // return real_roots: Array(4)
-    this.solve_deg4 = function (A, B, C, D, E) {
+    function solve_deg4 (A, B, C, D, E) {
         var coefficients = [A, B, C, D, E];
         var roots = quartic(coefficients);
         var n = 0;
@@ -350,6 +376,10 @@ function PnPSolver(fx, fy, cx, cy) {
             }
         }
         return [n, real_roots];
+    }
+
+    return {
+        solvePnP: solvePnP
     }
 
 }

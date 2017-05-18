@@ -20,7 +20,7 @@ var eyes = "crazyEyes";
 var face = "occluder";
 
 var showFaceContour = true;
-var webglCanvas;
+var webglCanvas = $("#webglCanvas");
 function getMatElement(m, x, y, size) {
     return m[x + y*size];
 }

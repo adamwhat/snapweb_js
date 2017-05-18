@@ -304,76 +304,61 @@ function getProjectionMatrix() {
 }
 
 var count = 500;
+webglCanvas = $("#webglCanvas");
+
 function getMVMatrix() {
     if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() != false) {
-        requestData = {};
         var positions = ctracker.getCurrentPosition();
-        requestData['objpoints'] = [];
-        requestData['imgpoints'] = [];
+        var objpoints = [];
+        var imgpoints = [];
 
         Object.keys(occluder_mapping).forEach(function (key) {
-            requestData['imgpoints'].push(positions[key]);
-            requestData['objpoints'].push(occluder_mapping[key]);
+            imgpoints.push(positions[key]);
+            objpoints.push(occluder_mapping[key]);
         })
-        requestData['fx'] = webglCanvas.width();
-        requestData['fy'] = webglCanvas.width();
-        requestData['cx'] = webglCanvas.width()/2.0;
-        requestData['cy'] = webglCanvas.height()/2.0;
 
-        $.ajax({
-            async: true,
-            url: 'http://localhost:9999/solvepnp',
-            data: JSON.stringify(requestData),
-            type: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            error: function (xhr, status, error) {
-                console.log(error);
-            },
-            success: function (data) {
-                var newTranslateX = data["translation"][0][0];
-                var newTranslateY = data["translation"][1][0];
-                var newTranslateZ = data["translation"][2][0];
+        var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
 
-                var rot = data["rotation"];
+        var newTranslateX = data["translation"][0];
+        var newTranslateY = data["translation"][1];
+        var newTranslateZ = data["translation"][2];
 
-                // var latestTransformation = [newTranslateX, newTranslateY, newTranslateZ];
-                // if (isNewTransformationOutlier(latestTransformation)) {
-                //     removedFrameCounter = removedFrameCounter + 1;
-                //     console.log("Number of Outlier Transformation removed: " + removedFrameCounter);
-                //     return;
-                // }
+        var rot = data["rotation"];
 
-                translateX = newTranslateX;
-                translateY = newTranslateY;
-                translateZ = newTranslateZ;
+        // var latestTransformation = [newTranslateX, newTranslateY, newTranslateZ];
+        // if (isNewTransformationOutlier(latestTransformation)) {
+        //     removedFrameCounter = removedFrameCounter + 1;
+        //     console.log("Number of Outlier Transformation removed: " + removedFrameCounter);
+        //     return;
+        // }
 
-                var T = mat4.create();
-                var translation = vec3.fromValues(translateX, translateY, translateZ);
-                mat4.fromTranslation(T, translation);
+        translateX = newTranslateX;
+        translateY = newTranslateY;
+        translateZ = newTranslateZ;
 
-                transMatrix = mat4.fromValues(
-                    rot[0][0], rot[1][0], rot[2][0], 0,
-                    rot[0][1], rot[1][1], rot[2][1], 0,
-                    rot[0][2], rot[1][2], rot[2][2], 0,
-                    0, 0, 0, 1,
-                );
-                var zAxis = vec3.fromValues(0, 0, 1);
+        var T = mat4.create();
+        var translation = vec3.fromValues(translateX, translateY, translateZ);
+        mat4.fromTranslation(T, translation);
 
-                // hack that convert cv convention to gl
-                var cvToGl = mat4.fromValues(
-                    -1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, -1, 0,
-                    0, 0, 0, 1,
-                );
-                mat4.mul(transMatrix, cvToGl, transMatrix);
-                mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
+        transMatrix = mat4.fromValues(
+            rot[0], rot[3], rot[6], 0,
+            rot[1], rot[4], rot[7], 0,
+            rot[2], rot[5], rot[8], 0,
+            0, 0, 0, 1
+        );
+        var zAxis = vec3.fromValues(0, 0, 1);
 
-                mat4.mul(transMatrix, transMatrix, T);
+        // hack that convert cv convention to gl
+        var cvToGl = mat4.fromValues(
+            -1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, -1, 0,
+            0, 0, 0, 1
+        );
+        mat4.mul(transMatrix, cvToGl, transMatrix);
+        mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
 
-            }
-        });
+        mat4.mul(transMatrix, transMatrix, T);
     }
 
     var result = mat4.create();
