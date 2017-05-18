@@ -1,9 +1,13 @@
+from flask import Flask, request
 import os
+app = Flask(__name__, static_url_path='', static_folder='../')
 
-os.system('pip3 install opencv-python')
-os.system('pip3 install flask')
-os.system('pip3 install flask_cors')
-os.system('pip3 install requests')
-os.system('pip3 install numpy')
-os.system('python3 scripts/server.py &')
-os.system('python3 -m http.server 8000')
+
+port = os.environ['PORT'] if 'PORT' in os.environ else 5000
+
+@app.route('/')
+def root():
+    return app.send_static_file('index.html')
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=port)
