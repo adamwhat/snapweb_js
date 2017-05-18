@@ -349,6 +349,7 @@ function getProjectionMatrix() {
 }
 
 var count = 500;
+const arrayColumn = (arr, n) => arr.map(x => x[n]);
 function getMVMatrix() {
     if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() != false) {
         requestData = {};
@@ -382,16 +383,18 @@ function getMVMatrix() {
 
                 var rot = data["rotation"];
 
-                // var latestTransformation = [newTranslateX, newTranslateY, newTranslateZ];
-                // if (isNewTransformationOutlier(latestTransformation)) {
-                //     removedFrameCounter = removedFrameCounter + 1;
-                //     console.log("Number of Outlier Transformation removed: " + removedFrameCounter);
-                //     return;
-                // }
+                var latestTranslation = [newTranslateX, newTranslateY, newTranslateZ];
+                translationHistory.push(latestTranslation);
+                var translation = [math.mean(arrayColumn(translationHistory, 0)),
+                    math.mean(arrayColumn(translationHistory, 1)),
+                    math.mean(arrayColumn(translationHistory, 2))];
+                if (translationHistory.length > 10) {
+                    translationHistory.shift();
+                }
 
-                translateX = newTranslateX;
-                translateY = newTranslateY;
-                translateZ = newTranslateZ;
+                translateX = translation[0];
+                translateY = translation[1];
+                translateZ = translation[2];
 
                 var T = mat4.create();
                 var translation = vec3.fromValues(translateX, translateY, translateZ);
@@ -424,19 +427,6 @@ function getMVMatrix() {
     var result = mat4.create();
     mat4.invert(result, transMatrix);
     return result;
-}
-
-function isNewTransformationOutlier(newTransformation) {
-    if (latestTransformation.length > 0) {
-        for (var p = 0; p < latestTransformation.length; p++) {
-            var transformationDiffBetweenFrame = math.abs(newTransformation[p] - latestTransformation[p])
-            if (transformationDiffBetweenFrame > 500.0) {
-                return true;
-            }
-        }
-    }
-    latestTransformation = newTransformation
-    return false;
 }
 
 function runWebGL(meshes, queue) {
