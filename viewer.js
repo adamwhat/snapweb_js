@@ -464,7 +464,7 @@ function initWebGlCanvas() {
         OBJ.downloadMeshes({
             'occluder': 'data/occluder_n.obj',
             'flowers1': 'data/flowers1_n.obj',
-            'frenchman': 'data/frenchman_hat.obj'
+            'frenchman': 'data/frenchman_hat_n.obj'
         }, function(meshes) {
             runWebGL(meshes, queue);
         });
