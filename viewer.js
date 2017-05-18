@@ -150,12 +150,12 @@ function drawOneEye(gl, shape, program, Mcam, Mproj, texture) {
 
     if (gl.getUniformLocation(program, "texture") != null) {
         // Step 1: Activate a "texture unit" of your choosing.
-        gl.activeTexture(gl.TEXTURE0);
+        gl.activeTexture(gl.TEXTURE1);
         // Step 2: Bind the texture you want to use.
         gl.bindTexture(gl.TEXTURE_2D, texture);
         // Step 3: Set the uniform to the "index" of the texture unit you just activated.
         var textureLocation = gl.getUniformLocation(program, "texture");
-        gl.uniform1i(textureLocation, 0);
+        gl.uniform1i(textureLocation, 1);
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
@@ -218,9 +218,15 @@ function initText(gl, textImg) {
     return texture;
 }
 
-function glEnv(meshes, textImg) {
+function glEnv(meshes, queue) {
     var gl = initializeWebGL("webglCanvas");
-
+    var flowersText = initText(gl, queue.getResult(flowers, false));
+    var eyesText = initText(gl, queue.getResult(eyes, false));
+    var textImg = {
+        flowers: flowersText,
+        eyes: eyesText,
+    }
+    console.log(textImg);
     gl.depthFunc(gl.LESS);
     gl.enable(gl.DEPTH_TEST);
     var flowers_shape = createShape(gl, meshes.flowers1);
@@ -231,6 +237,8 @@ function glEnv(meshes, textImg) {
         var texture;
         var shape;
         var cornerCount = 32;
+        // var flowersText = initText(gl, textImg[flowers]);
+        // var eyesText = initText(gl, textImg[eyes]);
 
         switch (objStr) {
             case flowers:
@@ -238,7 +246,7 @@ function glEnv(meshes, textImg) {
                 program = createGlslProgram(gl, 
                     flowers + "VertexShader", 
                     flowers + "FragmentShader");
-                texture = initText(gl, textImg);
+                texture = textImg.flowers;
                 break;
             case face:
                 shape = occluder_shape;
@@ -250,7 +258,7 @@ function glEnv(meshes, textImg) {
                 program = createGlslProgram(gl, 
                     eyes + "VertexShader", 
                     eyes + "FragmentShader");
-                texture = initText(gl, textImg);
+                texture = textImg.eyes;
                 break;
             default:
                 console.log(objStr + "is not a valid filter");
@@ -378,8 +386,8 @@ function isNewTransformationOutlier(newTransformation) {
     return false;
 }
 
-function runWebGL(meshes, textImg) {
-    env = glEnv(meshes, textImg);
+function runWebGL(meshes, queue) {
+    env = glEnv(meshes, queue);
     updateWebGL();
 }
 
@@ -395,15 +403,39 @@ function updateWebGL() {
 }
 
 function initWebGlCanvas() {
-    var textImg = new Image();
-    textImg.onload = function () {
+    // Step 1: Create a LoadQueue object.
+    var queue = new createjs.LoadQueue();
+    // Step 2: Register the callback function.
+    queue.on("complete", function() { 
+        console.log("queue complete loading");
         OBJ.downloadMeshes({
             'occluder': 'data/occluder_n.obj',
             'flowers1': 'data/flowers1_n.obj',
-        }, function (meshes) {
-            runWebGL(meshes, textImg);
+        }, function(meshes) {
+            runWebGL(meshes, queue);
         });
-    };
-    textImg.src = "data/flower_wreath.png";
+    }, this);
+    // Step 3: List the files you want to load, with their correponding ID.
+    queue.loadManifest([
+        {   
+            id: flowers,
+            src: "data/flower_wreath.png"
+        },
+        {
+            id: eyes,
+            src: "data/crazy_eye.png"
+        },
+    ]);
+
+    // var textImg = new Image();
+    // textImg.onload = function () {
+    //     OBJ.downloadMeshes({
+    //         'occluder': 'data/occluder_n.obj',
+    //         'flowers1': 'data/flowers1_n.obj',
+    //     }, function (meshes) {
+    //         runWebGL(meshes, textImg);
+    //     });
+    // };
+    // textImg.src = "data/flower_wreath.png";
 }
 

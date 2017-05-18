@@ -1,6 +1,5 @@
 var env;
 
-
 var rotationMatrix = mat4.create();
 var transMatrix = mat4.create();
 
@@ -19,4 +18,5 @@ var flowers = "flowers1";
 var face = "occluder";
 var eyes = "crazyEyes";
 var face = "occluder";
+
 var showFaceContour = true;
