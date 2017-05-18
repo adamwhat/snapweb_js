@@ -3,152 +3,205 @@
     <head>
         <title>Face tracker</title>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="./styles/index.css">
+        <link rel="stylesheet" href="./styles/default.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     </head>
     <body>
-    <table id="controltable" class="table table-bordered">
-        <tr>
-            <th width="40%">Facial Tracking Position</th>
-            <th>
-                <div class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-primary active">
-                        <input type="radio" name="options" id="displayFacialTracing" autocomplete="off" checked> Display
-                    </label>
-                    <label class="btn btn-primary">
-                        <input type="radio" name="options" id="hideFacialTracing" autocomplete="off"> Hide
-                    </label>
+        <div id="content">
+            <div id="videocontainer" class="videocontainer relative centerwithoutsize">
+                <video id="videoel" class="display invert" width="1200" height="800" preload="auto" loop></video>
+                <canvas id="clmtrackerCanvas" class ="display invert absolute" width="1200" height="800"></canvas>
+                <canvas id="webglCanvas" class ="display absolute" width="1200" height="800"></canvas>
+            </div>
+        </div>
+        <div class="container" style="padding-top: 5%">
+            <div class="form-group centerwithsize">
+                <label>Face Contour</label>
+                <label class="radio-inline"><input type="radio" name="facecontour" value="show" checked="true">Show</label>
+                <label class="radio-inline"><input type="radio" name="facecontour" value="hide">Hide</label>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="well">
+                        <div id="myCarousel" class="carousel slide">
+
+                            <!-- Carousel items -->
+                            <div class="carousel-inner">
+                                <div class="item active">
+                                    <div class="row-fluid">
+                                        <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="occluder"><img src="./data/face_model_effect.png" alt="Image" style="max-width:100%;" /></a></div>
+                                        <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="flowers1"><img src="./data/flowers_effect.png" alt="Image" style="max-width:100%;" /></a></div>
+                                        <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="crazyEyes"><img src="/data/crazy_eyes_effect.png" alt="Image" style="max-width:100%;" /></a></div>
+                                        <div class="col-md-3"><a href="#x" class="thumbnail" data-stickername="frenchman"><img src="/data/frenchman_effect.png" alt="Image" style="max-width:100%;" /></a></div>
+                                    </div><!--/row-fluid-->
+                                </div><!--/item-->
+
+                            </div><!--/carousel-inner-->
+
+                            <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
+                            <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
+                        </div><!--/myCarousel-->
+
+                    </div><!--/well-->
                 </div>
-            </th>
-        </tr>
-        <tr>
-            <th width="40%">Sticker Type</th>
-            <td></td>
-        </tr>
-    </table>
-    <script id="vertexShader" type="x-shader/x-vertex">
-                uniform mat4 Mproj;
-                uniform mat4 Mcam;
+            </div>
+<!--             <select id="filter">
+                <option value="occluder">Face Model</option>
+                <option value="flowers1">Flower Wreath</option>
+                <option value="crazyEyes">Crazy Eyes</option>
+            </select>
+            <select id="faceContour">
+                <option value="1">show face contour</option>
+                <option value="0">hide face contour</option>
+            </select> -->
+        </div>
+        <script id="frenchmanVertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
 
-                attribute vec2 uv;
-                attribute vec3 vert_position;
-                // will generate warning because normal is not used now
-                // attribute vec3 normal;
+            attribute vec2 uv;
+            attribute vec3 vert_position;
 
-                varying vec2 geom_texCoord;
+            varying vec2 geom_texCoord;
 
-                void main() {
-                    gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
-                    geom_texCoord = uv;
-                }
+            void main() {
 
-
-    </script>
-
-    <script id="fragmentShader" type="x-shader/x-fragment">
-                precision highp float;
-
-                varying vec2 geom_texCoord;
-
-                uniform sampler2D texture;
-
-                void main() {
-                    gl_FragColor = texture2D(texture, geom_texCoord);
-                }
-
-    </script>
-    <script src="./js/model/model_pca_20_svm.js"></script>
-    <script src="./global.js"></script>
-    <script src="./js/occluder_mapping.js"></script>
-    <script src="js/jquery-3.1.1.min.js"></script>
-    <script src="js/jquery-ui.min.js"></script>
-    <script src="js/gl-matrix-min.js"></script>
-    <script src="js/preloadjs-0.6.2.min.js"></script>
-    <script src="js/webgl-obj-loader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.12.2/math.js" type="text/javascript"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
-    <script src="./webgl.js"></script>
-    <script src="./viewer.js"></script>
-    <script src="./js/webgazer.js"></script>
-    <script src="./js/utils.js"></script>
-    <script src="./js/control.js"></script>
-    <script>
-        window.onload = function () {
-            webgazer.setRegression('ridge') /* currently must set regression and tracker */
-                .setTracker('clmtrackr')
-                .setGazeListener(function (data, clock) {
-                    //   console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
-                    //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
-                })
-                .begin()
-                .showPredictionPoints(true);
-            /* shows a square every 100 milliseconds where current prediction is */
-
-            var width = 600;
-            var height = 400;
-            var topDist = '20%';
-            var leftDist = '35%';
-
-            var setup = function () {
-                var video = document.getElementById('webgazerVideoFeed');
-                video.style.display = 'block';
-                setupCanvasStyle(video, true);
-                webgazer.params.imgWidth = width;
-                webgazer.params.imgHeight = height;
-
-                var overlay = document.createElement('canvas');
-                overlay.id = 'overlay';
-                setupCanvasStyle(overlay, true);
-                document.body.appendChild(overlay);
-
-                var stickerOverlay = document.createElement('canvas');
-                stickerOverlay.id = 'webglCanvas';
-                setupCanvasStyle(stickerOverlay, false);
-                document.body.appendChild(stickerOverlay);
-
-                ctracker = webgazer.getTracker().clm;
-
-                function drawLoop() {
-                    requestAnimFrame(drawLoop);
-                    overlay.getContext('2d').clearRect(0, 0, width, height);
-                    if (ctracker.getCurrentPosition()) {
-                        ctracker.draw(overlay);
-                    }
-                }
-
-                drawLoop();
-            };
-
-            function setupCanvasStyle(element, shouldFlip) {
-                element.style.position = 'absolute';
-                element.style.top = topDist;
-                element.style.left = leftDist;
-                element.width = width;
-                element.height = height;
-                element.style.margin = '0px';
-                if (shouldFlip) {
-                    element.style.transform = 'scaleX(-1)';
-                    element.style.filter = 'fliph';
-                }
+                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                geom_texCoord = uv;
             }
+        </script>
 
-            function init() {
-                if (webgazer.isReady()) {
-                    setup();
-                    initWebGlCanvas();
-                } else {
-                    setTimeout(init, 100);
-                }
+        <script id="frenchmanFragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+
+            varying vec2 geom_texCoord;
+
+            uniform sampler2D texture;
+
+            void main() {
+                gl_FragColor = texture2D(texture, geom_texCoord);
             }
+        </script>
+        <script id="crazyEyesVertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
+            uniform vec3 center;
+            uniform float radius;
 
-            init();
-        };
+            attribute vec2 uv;
+            attribute vec3 vert_position;
+
+            varying vec2 geom_texCoord;
+
+            void main() {
+                gl_Position = Mproj * Mcam * vec4(vert_position + center, 1.0);
+                geom_texCoord = uv;
+            }
+        </script>
+
+        <script id="crazyEyesFragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+
+            varying vec2 geom_texCoord;
+
+            uniform sampler2D texture;
+
+            void main() {
+                gl_FragColor = texture2D(texture, geom_texCoord);
+            }
+        </script>
+        <script id="flowers1VertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
+
+            attribute vec2 uv;
+            attribute vec3 vert_position;
+
+            varying vec2 geom_texCoord;
+
+            void main() {
+
+                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                geom_texCoord = uv;
+            }
+        </script>
+
+        <script id="flowers1FragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+
+            varying vec2 geom_texCoord;
+
+            uniform sampler2D texture;
+
+            void main() {
+                gl_FragColor = texture2D(texture, geom_texCoord);
+            }
+        </script>
+
+        <script id="occluderVertexShader" type="x-shader/x-vertex">
+            uniform mat4 Mproj;
+            uniform mat4 Mcam;
+            attribute vec3 vert_position;
+            attribute vec3 normal; 
+            varying vec3 geom_texCoord;
+
+            void main() {
+                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                geom_texCoord = normal;
+            }
+        </script>
+
+        <script id="occluderFragmentShader" type="x-shader/x-fragment">
+            precision highp float;
+            varying vec3 geom_texCoord;
+
+            void main() {
+                gl_FragColor = vec4(geom_texCoord, 1.0);
+            }
+        </script>
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <script src="js/jquery-ui.min.js"></script>
+        <script src="js/gl-matrix-min.js"></script>
+        <script src="js/preloadjs-0.6.2.min.js"></script>
+        <script src="js/webgl-obj-loader.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.12.2/math.js" type="text/javascript"></script>
+        <script src="./global.js"></script>
+        <script src="./js/occluder_mapping.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
+
+        <script src="./js/utils.js"></script>
+        <script src="./js/clmtrackr.js"></script>
+        <script src="./js/model/model_pca_20_svm.js"></script>
+        <script src="./js/camera_stream.js"></script>
+        <script src="./js/helper_information.js"></script>
+        <script src="./js/preloadjs-0.6.2.min.js"></script>
+        <script src="./viewer.js"></script>
+        <script src="./js/control.js"></script>
+
+        <script>
+            var vid = $('#videoel')[0];
+            init_camera_stream(vid);
+
+            var ctracker = new clm.tracker();
+            ctracker.init(pModel);
+            ctracker.start(vid);
 
 
-        window.onbeforeunload = function () {
-//            webgazer.end(); //Uncomment if you want to save the data even if you reload the page.
-            window.localStorage.clear(); //Comment out if you want to save data across different sessions
-        }
-    </script>
+            // Draw feature points
+            var canvasInput = $('#clmtrackerCanvas')[0];
+            var cc = canvasInput.getContext('2d');
+            function drawLoop() {
+                cc.clearRect(0, 0, canvasInput.width, canvasInput.height);
+                if (showFaceContour){
+                    ctracker.draw(canvasInput);
+                }
+                requestAnimationFrame(drawLoop);
+            }
+            drawLoop();
+            initWebGlCanvas();
+            webglCanvas = $("#webglCanvas")
+        </script>
+        <script src="./webgl.js"></script>
+
     </body>
 </html>
