@@ -37,6 +37,7 @@ function PnPSolver(fx, fy, cx, cy) {
                     mu2, mv2, x2, y2, z2,
                     mu3, mv3, x3, y3, z3) {
 
+        // rs: array of matrix 3x3, ts: array of vec3
         var n, rs = Array(4), ts = Array(4);
         [n, rs, ts] = this.solve3(mu0, mv0, x0, y0, z0,
             mu1, mv1, x1, y1, z1,
@@ -61,16 +62,16 @@ function PnPSolver(fx, fy, cx, cy) {
             }
         }
 
-        var rotate = mat4.create();
-        var translate = var3.create();
+        var rotate = mat3.clone(rs[ns]);
+        var translate = var3.clone(ts[ns]);
 
-        for(var i = 0; i < 9; i++) {
-            rotate[i] = rs[ns][i];
-        }
+        // for(var i = 0; i < 9; i++) {
+        //     rotate[i] = rs[ns][i];
+        // }
 
-        for (var i = 0; i < 3; i++) {
-            translate[i] = ts[ns][i];
-        }
+        // for (var i = 0; i < 3; i++) {
+        //     translate[i] = ts[ns][i];
+        // }
         return true;
     };
 
@@ -120,19 +121,22 @@ function PnPSolver(fx, fy, cx, cy) {
 
             mat3.set(M_orig,
                 lengths[i][0] * mu0,
-                lengths[i][0] * mv0,
-                lengths[i][0] * mk0,
                 lengths[i][1] * mu1,
-                lengths[i][1] * mv1,
-                lengths[i][1] * mk1,
                 lengths[i][2] * mu2,
+
+                lengths[i][0] * mv0,
+                lengths[i][1] * mv1,
                 lengths[i][2] * mv2,
+
+                lengths[i][0] * mk0,
+                lengths[i][1] * mk1,
                 lengths[i][2] * mk2
             );
 
             var outR = mat3.create(), outT = vec3.create(), res;
             [res, outR, outT] = align(M_orig, X0, Y0, Z0, X1, Y1, Z1, X2, Y2, Z2);
 
+            // TODO: assign value to resultRT should be above this if?
             if (res === false) {
                 continue;
             }
@@ -169,26 +173,27 @@ function PnPSolver(fx, fy, cx, cy) {
             s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j)) / 3 - C_end[j] * C_start[2];
         }
 
-        var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t);
-        var evs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t);
-        var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t);
+        var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
+        var W = new jsfeat.matrix_t(4, 1, jsfeat.F32_t | jsfeat.C1_t);
+        var U = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
+        var V = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);        
             
-            Array(16), evs0 =  = Array(4), U0 = Array(16);
+        // Qs = Array(16), evs0 =  = Array(4), U0 = Array(16);
 
-        Qs[0 * 4 + 0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
-        Qs[1 * 4 + 1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
-        Qs[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
-        Qs[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
+        Qs.data[0 * 4 + 0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
+        Qs.data[1 * 4 + 1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
+        Qs.data[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
+        Qs.data[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
 
-        Qs[1 * 4 + 0] = Qs[0 * 4 + 1] = s[1 * 3 + 2] - s[2 * 3 + 1];
-        Qs[2 * 4 + 0] = Qs[0 * 4 + 2] = s[2 * 3 + 0] - s[0 * 3 + 2];
-        Qs[3 * 4 + 0] = Qs[0 * 4 + 3] = s[0 * 3 + 1] - s[1 * 3 + 0];
-        Qs[2 * 4 + 1] = Qs[1 * 4 + 2] = s[1 * 3 + 0] + s[0 * 3 + 1];
-        Qs[3 * 4 + 1] = Qs[1 * 4 + 3] = s[2 * 3 + 0] + s[0 * 3 + 2];
-        Qs[3 * 4 + 2] = Qs[2 * 4 + 3] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        Qs.data[1 * 4 + 0] = Qs[0 * 4 + 1] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        Qs.data[2 * 4 + 0] = Qs[0 * 4 + 2] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        Qs.data[3 * 4 + 0] = Qs[0 * 4 + 3] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        Qs.data[2 * 4 + 1] = Qs[1 * 4 + 2] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        Qs.data[3 * 4 + 1] = Qs[1 * 4 + 3] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        Qs.data[3 * 4 + 2] = Qs[2 * 4 + 3] = s[2 * 3 + 1] + s[1 * 3 + 2];
 
-        jsfeat.linalg.svd_decompose(Qs, evs, U);
-
+        jsfeat.linalg.svd_decompose(Qs, evs, U, V);
+        var evs = W.data;
         // Looking for the largest eigen value:
         var i_ev = 0;
         var ev_max = evs[i_ev];
@@ -199,29 +204,38 @@ function PnPSolver(fx, fy, cx, cy) {
         }
 
         // Quaternion:
-        double q[4];
-        for(int i = 0; i < 4; i++)
-            q[i] = U[i * 4 + i_ev];
+        var q = Array(4);
+        for(var i = 0; i < 4; i++)
+            q[i] = U.data[i * 4 + i_ev];
 
-        double q02 = q[0] * q[0], q12 = q[1] * q[1], q22 = q[2] * q[2], q32 = q[3] * q[3];
-        double q0_1 = q[0] * q[1], q0_2 = q[0] * q[2], q0_3 = q[0] * q[3];
-        double q1_2 = q[1] * q[2], q1_3 = q[1] * q[3];
-        double q2_3 = q[2] * q[3];
+        var q02 = q[0] * q[0], q12 = q[1] * q[1], q22 = q[2] * q[2], q32 = q[3] * q[3];
+        var q0_1 = q[0] * q[1], q0_2 = q[0] * q[2], q0_3 = q[0] * q[3];
+        var q1_2 = q[1] * q[2], q1_3 = q[1] * q[3];
+        var q2_3 = q[2] * q[3];
 
-        R[0][0] = q02 + q12 - q22 - q32;
-        R[0][1] = 2. * (q1_2 - q0_3);
-        R[0][2] = 2. * (q1_3 + q0_2);
+        var R = mat3.create()
+        // Already fix order problem here
+        mat3.set(R,
+            q02 + q12 - q22 - q32, 2. * (q1_2 + q0_3), 2. * (q1_3 - q0_2),
+            2. * (q1_2 - q0_3), q02 + q22 - q12 - q32, 2. * (q2_3 + q0_1),
+            2. * (q1_3 + q0_2), 2. * (q2_3 - q0_1), q02 + q32 - q12 - q22
+        );
+        // R[0][0] = q02 + q12 - q22 - q32;
+        // R[0][1] = 2. * (q1_2 - q0_3);
+        // R[0][2] = 2. * (q1_3 + q0_2);
 
-        R[1][0] = 2. * (q1_2 + q0_3);
-        R[1][1] = q02 + q22 - q12 - q32;
-        R[1][2] = 2. * (q2_3 - q0_1);
+        // R[1][0] = 2. * (q1_2 + q0_3);
+        // R[1][1] = q02 + q22 - q12 - q32;
+        // R[1][2] = 2. * (q2_3 - q0_1);
 
-        R[2][0] = 2. * (q1_3 - q0_2);
-        R[2][1] = 2. * (q2_3 + q0_1);
-        R[2][2] = q02 + q32 - q12 - q22;
-
-        for(int i = 0; i < 3; i++)
-            T[i] = C_end[i] - (R[i][0] * C_start[0] + R[i][1] * C_start[1] + R[i][2] * C_start[2]);
+        // R[2][0] = 2. * (q1_3 - q0_2);
+        // R[2][1] = 2. * (q2_3 + q0_1);
+        // R[2][2] = q02 + q32 - q12 - q22;
+        var T = vec3.create();
+        
+        for(var i = 0; i < 3; i++)
+            // T[i] = C_end[i] - (R[i][0] * C_start[0] + R[i][1] * C_start[1] + R[i][2] * C_start[2]);
+            T[i] = C_end[i] - (getMatElement(R, i, 0, 3) * C_start[0] + getMatElement(R, i, 1, 3) * C_start[1] + getMatElement(R, i, 2, 3) * C_start[2]);
 
         return true;
     }

@@ -18,7 +18,7 @@ var fps = 30;
 var removedFrameCounter = 0;
 
 function getMatElement(m, x, y, size) {
-    return m[x*size + y];
+    return m[x + y*size];
 }
 
 function assert(condition, message) {
