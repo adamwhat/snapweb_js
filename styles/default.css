@@ -14,14 +14,19 @@
 .videocontainer {
     width: 600px;
     height: 400px;
-    margin-left: 40%;
 }
 
-.center {
+.centerwithoutsize {
     margin: auto;
-    width: 50%;
+}
+
+.centerwithsize {
+    width: 30%;
+    margin: auto;
+}
+
+.border {
     border: 3px solid grey;
-    padding: 10px;
 }
 
 .invert {

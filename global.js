@@ -20,3 +20,4 @@ var eyes = "crazyEyes";
 var face = "occluder";
 
 var showFaceContour = true;
+var webglCanvas;
