@@ -23,29 +23,29 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         var tvec = vec3.create();
 
 
-        console.log(objPoints);
+        // console.log(objPoints);
         assert(objPoints.length == 4);
         assert(imgPoints.length == 4);
         assert(imgPoints.length == objPoints.length);
 
         return solve4(
-            imgPoints[0][0] * fx + cx,
-            imgPoints[0][1] * fy + cy,
+            imgPoints[0][0],
+            imgPoints[0][1],
             objPoints[0][0],
             objPoints[0][1],
             objPoints[0][2],
-            imgPoints[1][0] * fx + cx,
-            imgPoints[1][1] * fy + cy,
+            imgPoints[1][0],
+            imgPoints[1][1],
             objPoints[1][0],
             objPoints[1][1],
             objPoints[1][2],
-            imgPoints[2][0] * fx + cx,
-            imgPoints[2][1] * fy + cy,
+            imgPoints[2][0],
+            imgPoints[2][1],
             objPoints[2][0],
             objPoints[2][1],
             objPoints[2][2],
-            imgPoints[3][0] * fx + cx,
-            imgPoints[3][1] * fy + cy,
+            imgPoints[3][0],
+            imgPoints[3][1],
             objPoints[3][0],
             objPoints[3][1],
             objPoints[3][2]
@@ -134,8 +134,8 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         var n, lengths = Array(4);
         [n, lengths] = solve_for_lengths(distances, cosines);
 
-        console.log("nbsol", n);
-        console.log("lenghts", lengths);
+        // console.log("nbsol", n);
+        // console.log("lenghts", lengths);
 
         var nb_solutions = 0;
         // resultR 4 * 3 * 3 (4 * mat3), resultT 4 * 3 (4 * mat3)
@@ -290,9 +290,9 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         // Covariance matrix s: mat3
         var s = Array(9);
         for (var j = 0; j < 3; j++) {
-            s[0 * 3 + j] = (X0 * getMatElement(M_end, 0, j, 3) + X1 * getMatElement(M_end, 1, j, 3) + X2 * getMatElement(M_end, 2, j)) / 3 - C_end[j] * C_start[0];
-            s[1 * 3 + j] = (Y0 * getMatElement(M_end, 0, j, 3) + Y1 * getMatElement(M_end, 1, j, 3) + Y2 * getMatElement(M_end, 2, j)) / 3 - C_end[j] * C_start[1];
-            s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j)) / 3 - C_end[j] * C_start[2];
+            s[0 * 3 + j] = (X0 * getMatElement(M_end, 0, j, 3) + X1 * getMatElement(M_end, 1, j, 3) + X2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[0];
+            s[1 * 3 + j] = (Y0 * getMatElement(M_end, 0, j, 3) + Y1 * getMatElement(M_end, 1, j, 3) + Y2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[1];
+            s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[2];
         }
 
         var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
