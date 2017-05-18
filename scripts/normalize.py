@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-files = ["../data/occluder.obj", "../data/flowers1.obj", "../data/flowers2.obj"]
-out_files = ["../data/occluder_n.obj", "../data/flowers1_n.obj", "../data/flowers2_n.obj"]
+files = ["../data/occluder.obj", "../data/flowers1.obj", "../data/flowers2.obj", "../data/frenchman_hat.obj"]
+out_files = ["../data/occluder_n.obj", "../data/flowers1_n.obj", "../data/flowers2_n.obj", "../data/frenchman_hat_n.obj"]
 
 print_idx = [
     (27, 1382, "left eye center"),

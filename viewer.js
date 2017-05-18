@@ -61,7 +61,6 @@ function drawFlowers(gl, shape, program, Mcam, Mproj, texture) {
     gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-
     gl.useProgram(null);
 }
 
@@ -183,6 +182,39 @@ function drawEyes(gl, shape, program, Mcam, Mproj, texture) {
 
 }
 
+function drawFrenchman(gl, shape, program, Mcam, Mproj, texture) {
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+    var positionLocation = gl.getAttribLocation(program, "vert_position");
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 8, 0);
+
+    var uvLocation = gl.getAttribLocation(program, "uv");
+    gl.enableVertexAttribArray(uvLocation);
+    gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 4 * 8, 4 * 6);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mcam"), false, Mcam);
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "Mproj"), false, Mproj);
+
+    if (gl.getUniformLocation(program, "texture") != null) {
+        // Step 1: Activate a "texture unit" of your choosing.
+        gl.activeTexture(gl.TEXTURE2);
+        // Step 2: Bind the texture you want to use.
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // Step 3: Set the uniform to the "index" of the texture unit you just activated.
+        var textureLocation = gl.getUniformLocation(program, "texture");
+        gl.uniform1i(textureLocation, 2);
+    }
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+    gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    gl.useProgram(null);
+}
+
 function drawShape(obj, gl, shape, program, Mcam, Mproj, texture) {
     switch (obj) {
         case flowers:
@@ -193,6 +225,9 @@ function drawShape(obj, gl, shape, program, Mcam, Mproj, texture) {
             break;
         case eyes:
             drawEyes(gl, shape, program, Mcam, Mproj, texture);
+            break;
+        case frenchman:
+            drawFrenchman(gl, shape, program, Mcam, Mproj, texture);
             break;
         default:
             console.log(obj + "is not a valid filter");
@@ -222,23 +257,23 @@ function glEnv(meshes, queue) {
     var gl = initializeWebGL("webglCanvas");
     var flowersText = initText(gl, queue.getResult(flowers, false));
     var eyesText = initText(gl, queue.getResult(eyes, false));
+    var frenchmanText = initText(gl, queue.getResult(frenchman, false));
     var textImg = {
         flowers: flowersText,
         eyes: eyesText,
+        frenchman: frenchmanText
     }
     console.log(textImg);
     gl.depthFunc(gl.LESS);
     gl.enable(gl.DEPTH_TEST);
     var flowers_shape = createShape(gl, meshes.flowers1);
     var occluder_shape = createShape(gl, meshes.occluder);
+    var frenchman_shape = createShape(gl, meshes.frenchman);
 
     function drawFrame(Mcam, Mproj) {
         var program;
         var texture;
         var shape;
-        var cornerCount = 32;
-        // var flowersText = initText(gl, textImg[flowers]);
-        // var eyesText = initText(gl, textImg[eyes]);
 
         switch (objStr) {
             case flowers:
@@ -259,6 +294,13 @@ function glEnv(meshes, queue) {
                     eyes + "VertexShader", 
                     eyes + "FragmentShader");
                 texture = textImg.eyes;
+                break;
+            case frenchman:
+                shape = frenchman_shape;
+                program = createGlslProgram(gl,
+                    frenchman + "VertexShader",
+                    frenchman + "FragmentShader");
+                texture = textImg.frenchman;
                 break;
             default:
                 console.log(objStr + "is not a valid filter");
@@ -305,9 +347,10 @@ function getProjectionMatrix() {
 
 var count = 500;
 webglCanvas = $("#webglCanvas");
+const arrayColumn = (arr, n) => arr.map(x => x[n]);
 
 function getMVMatrix() {
-    if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() != false) {
+    if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() !== false) {
         var positions = ctracker.getCurrentPosition();
         var objpoints = [];
         var imgpoints = [];
@@ -315,39 +358,33 @@ function getMVMatrix() {
         Object.keys(occluder_mapping).forEach(function (key) {
             imgpoints.push(positions[key]);
             objpoints.push(occluder_mapping[key]);
-        })
+        });
         var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
-
-        // objpoints = [[0.0,0.0,0.0],[-62.1225319, 15.7540569, 0.819464564],[62.3174629, 15.7940502, 0.819983721],[-0.372639507, 16.4230633,  -36.5060043]];
-        // imgpoints = [[463.423, 139.419],[158.196, 218.958],[775.287, 217.277],[440.247, 227.035]]
-        // var data = PnPSolver(3844.44, 3841.06, 640.0, 380.0).solvePnP(objpoints, imgpoints);
         console.log(data);
-        
-        var newTranslateX = data["translation"][0];
-        var newTranslateY = data["translation"][1];
-        var newTranslateZ = data["translation"][2];
 
-        var rot = data["rotation"];
+        var rot = data.rotation;
 
-        // var latestTransformation = [newTranslateX, newTranslateY, newTranslateZ];
-        // if (isNewTransformationOutlier(latestTransformation)) {
-        //     removedFrameCounter = removedFrameCounter + 1;
-        //     console.log("Number of Outlier Transformation removed: " + removedFrameCounter);
-        //     return;
-        // }
+        var latestTranslation = data.translation;
+        translationHistory.push(latestTranslation);
+        var translation = [math.mean(arrayColumn(translationHistory, 0)),
+            math.mean(arrayColumn(translationHistory, 1)),
+            math.mean(arrayColumn(translationHistory, 2))];
+        if (translationHistory.length > 10) {
+            translationHistory.shift();
+        }
 
-        translateX = newTranslateX;
-        translateY = newTranslateY;
-        translateZ = newTranslateZ;
+        translateX = translation[0];
+        translateY = translation[1];
+        translateZ = translation[2];
 
         var T = mat4.create();
-        var translation = vec3.fromValues(translateX, translateY, translateZ);
+        translation = vec3.fromValues(translateX, translateY, translateZ);
         mat4.fromTranslation(T, translation);
 
         transMatrix = mat4.fromValues(
-            rot[0], rot[3], rot[6], 0,
-            rot[1], rot[4], rot[7], 0,
-            rot[2], rot[5], rot[8], 0,
+            rot[0][0], rot[1][0], rot[2][0], 0,
+            rot[0][1], rot[1][1], rot[2][1], 0,
+            rot[0][2], rot[1][2], rot[2][2], 0,
             0, 0, 0, 1
         );
         var zAxis = vec3.fromValues(0, 0, 1);
@@ -368,19 +405,6 @@ function getMVMatrix() {
     var result = mat4.create();
     mat4.invert(result, transMatrix);
     return result;
-}
-
-function isNewTransformationOutlier(newTransformation) {
-    if (latestTransformation.length > 0) {
-        for (var p = 0; p < latestTransformation.length; p++) {
-            var transformationDiffBetweenFrame = math.abs(newTransformation[p] - latestTransformation[p])
-            if (transformationDiffBetweenFrame > 500.0) {
-                return true;
-            }
-        }
-    }
-    latestTransformation = newTransformation
-    return false;
 }
 
 function runWebGL(meshes, queue) {
@@ -408,6 +432,7 @@ function initWebGlCanvas() {
         OBJ.downloadMeshes({
             'occluder': 'data/occluder_n.obj',
             'flowers1': 'data/flowers1_n.obj',
+            'frenchman': 'data/frenchman_hat_n.obj'
         }, function(meshes) {
             runWebGL(meshes, queue);
         });
@@ -422,17 +447,10 @@ function initWebGlCanvas() {
             id: eyes,
             src: "data/crazy_eye.png"
         },
+        {
+            id: frenchman,
+            src: "data/hat_diffuse.png"
+        }
     ]);
-
-    // var textImg = new Image();
-    // textImg.onload = function () {
-    //     OBJ.downloadMeshes({
-    //         'occluder': 'data/occluder_n.obj',
-    //         'flowers1': 'data/flowers1_n.obj',
-    //     }, function (meshes) {
-    //         runWebGL(meshes, textImg);
-    //     });
-    // };
-    // textImg.src = "data/flower_wreath.png";
 }
 
