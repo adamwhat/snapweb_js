@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 import json
 import numpy as np
+import cv2
 app = Flask(__name__, static_url_path='')
 CORS(app)
 CALIBRATE_CAMERA = True
