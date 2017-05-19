@@ -504,7 +504,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
                         var s = t * c;
                         var tau = s / (1.0 + c);
 
-                        for (var k = 0; k < i - 1; k++) {
+                        for (var k = 0; k <= i - 1; k++) {
                             var g = A[k * 4 + i];
                             var h = A[k * 4 + j];
                             A[k * 4 + i] = g - s * (h + g * tau);

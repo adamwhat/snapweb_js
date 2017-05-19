@@ -359,7 +359,11 @@ function getMVMatrix() {
             imgpoints.push(positions[key]);
             objpoints.push(occluder_mapping[key]);
         });
-        var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
+        // var objpoints = [[-0.7561,0.4166,0.7781],[0.7587,0.4112,0.7705],[-0.6283,-0.9657,0.7773],[0.6219,-0.9701,0.7711]];
+        // var imgpoints = [[663.2573897170773,220.90189596099242],[822.1705208569673,214.52767008787782],[684.8182037363805,374.3041765424229],[812.0664095442263,368.9899811787641]];
+        var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);        
+        // var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
+        console.log(data);
 
         var rot = data.rotation;
 
