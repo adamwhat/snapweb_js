@@ -427,6 +427,7 @@ function getMVMatrix() {
             0, 0, 0, 1
         );
         var zAxis = vec3.fromValues(0, 0, 1);
+        var yAxis = vec3.fromValues(0, 1, 0);
 
         // hack that convert cv convention to gl
         var cvToGl = mat4.fromValues(
@@ -437,6 +438,7 @@ function getMVMatrix() {
         );
         mat4.mul(transMatrix, cvToGl, transMatrix);
         mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
+        mat4.rotate(transMatrix, transMatrix, degreeToRadian(-15), yAxis);        
 
         mat4.mul(transMatrix, transMatrix, T);
 

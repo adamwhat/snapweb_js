@@ -65,7 +65,7 @@
 
             void main() {
 
-                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                gl_Position = Mproj * Mcam * vec4(vert_position.x, vert_position.y + 0.5, vert_position.z-1.5, 1.0);
                 geom_texCoord = uv;
             }
         </script>
@@ -93,7 +93,8 @@
             varying vec2 geom_texCoord;
 
             void main() {
-                gl_Position = Mproj * Mcam * vec4(vert_position + center, 1.0);
+                vec3 pos = vert_position + center;
+                gl_Position = Mproj * Mcam * vec4(pos.x, pos.y, pos.z - 3.0, 1.0);
                 geom_texCoord = uv;
             }
         </script>
@@ -120,7 +121,7 @@
 
             void main() {
 
-                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                gl_Position = Mproj * Mcam * vec4(vert_position.x, vert_position.y, vert_position.z, 1.0);
                 geom_texCoord = uv;
             }
         </script>
@@ -145,7 +146,7 @@
             varying vec3 geom_texCoord;
 
             void main() {
-                gl_Position = Mproj * Mcam * vec4(vert_position, 1.0);
+                gl_Position = Mproj * Mcam * vec4(vert_position.x, vert_position.y, vert_position.z, 1.0);
                 geom_texCoord = normal;
             }
         </script>
