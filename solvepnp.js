@@ -52,7 +52,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         );
     };
 
-    function solve4 (mu0, mv0, x0, y0, z0,
+    function solve4(mu0, mv0, x0, y0, z0,
         mu1, mv1, x1, y1, z1,
         mu2, mv2, x2, y2, z2,
         mu3, mv3, x3, y3, z3) {
@@ -98,7 +98,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         }
     };
 
-    function solve3 (mu0, mv0, X0, Y0, Z0,
+    function solve3(mu0, mv0, X0, Y0, Z0,
         mu1, mv1, X1, Y1, Z1,
         mu2, mv2, X2, Y2, Z2) {
 
@@ -295,108 +295,96 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
             s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[2];
         }
 
-        var Qs = [[0,0,0,0],
-                  [0,0,0,0],
-                  [0,0,0,0],
-                  [0,0,0,0]];
+        // var Qs = [[0, 0, 0, 0],
+        // [0, 0, 0, 0],
+        // [0, 0, 0, 0],
+        // [0, 0, 0, 0]];
         // var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
         // var W = new jsfeat.matrix_t(1, 4, jsfeat.F32_t | jsfeat.C1_t);
         // var U = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
         // var V = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
 
         // Qs = Array(16), evs0 =  = Array(4), U0 = Array(16);
+        var Qs = Array(16);
 
-        // Qs.data[0 * 4 + 0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
-        // Qs.data[1 * 4 + 1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
-        // Qs.data[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
-        // Qs.data[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
+        Qs[0 * 4 + 0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
+        Qs[1 * 4 + 1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
+        Qs[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
+        Qs[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
 
-        Qs[0][0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
-        Qs[1][1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
-        Qs[2][2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
-        Qs[3][3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
+        // Qs[0][0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
+        // Qs[1][1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
+        // Qs[2][2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
+        // Qs[3][3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
 
-        // Qs.data[1 * 4 + 0] = s[1 * 3 + 2] - s[2 * 3 + 1];
-        // Qs.data[2 * 4 + 0] = s[2 * 3 + 0] - s[0 * 3 + 2];
-        // Qs.data[3 * 4 + 0] = s[0 * 3 + 1] - s[1 * 3 + 0];
-        // Qs.data[2 * 4 + 1] = s[1 * 3 + 0] + s[0 * 3 + 1];
-        // Qs.data[3 * 4 + 1] = s[2 * 3 + 0] + s[0 * 3 + 2];
-        // Qs.data[3 * 4 + 2] = s[2 * 3 + 1] + s[1 * 3 + 2];
-        // Qs.data[0 * 4 + 1] = Qs.data[1 * 4 + 0];
-        // Qs.data[0 * 4 + 2] = Qs.data[2 * 4 + 0];
-        // Qs.data[0 * 4 + 3] = Qs.data[3 * 4 + 0];
-        // Qs.data[1 * 4 + 2] = Qs.data[2 * 4 + 1];
-        // Qs.data[1 * 4 + 3] = Qs.data[3 * 4 + 1];
-        // Qs.data[2 * 4 + 3] = Qs.data[3 * 4 + 2];
-        
-        Qs[1][0] = s[1 * 3 + 2] - s[2 * 3 + 1];
-        Qs[2][0] = s[2 * 3 + 0] - s[0 * 3 + 2];
-        Qs[3][0] = s[0 * 3 + 1] - s[1 * 3 + 0];
-        Qs[2][1] = s[1 * 3 + 0] + s[0 * 3 + 1];
-        Qs[3][1] = s[2 * 3 + 0] + s[0 * 3 + 2];
-        Qs[3][2] = s[2 * 3 + 1] + s[1 * 3 + 2];
-        Qs[0][1] = Qs[1][0];
-        Qs[0][2] = Qs[2][0];
-        Qs[0][3] = Qs[3][0];
-        Qs[1][2] = Qs[2][1];
-        Qs[1][3] = Qs[3][1];
-        Qs[2][3] = Qs[3][2];
+        Qs[1 * 4 + 0] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        Qs[2 * 4 + 0] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        Qs[3 * 4 + 0] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        Qs[2 * 4 + 1] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        Qs[3 * 4 + 1] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        Qs[3 * 4 + 2] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        Qs[0 * 4 + 1] = Qs[1 * 4 + 0];
+        Qs[0 * 4 + 2] = Qs[2 * 4 + 0];
+        Qs[0 * 4 + 3] = Qs[3 * 4 + 0];
+        Qs[1 * 4 + 2] = Qs[2 * 4 + 1];
+        Qs[1 * 4 + 3] = Qs[3 * 4 + 1];
+        Qs[2 * 4 + 3] = Qs[3 * 4 + 2];
 
+        // Qs[1][0] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        // Qs[2][0] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        // Qs[3][0] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        // Qs[2][1] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        // Qs[3][1] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        // Qs[3][2] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        // Qs[0][1] = Qs[1][0];
+        // Qs[0][2] = Qs[2][0];
+        // Qs[0][3] = Qs[3][0];
+        // Qs[1][2] = Qs[2][1];
+        // Qs[1][3] = Qs[3][1];
+        // Qs[2][3] = Qs[3][2];
 
-        // Qs.data[1] = s[1 * 3 + 2] - s[2 * 3 + 1];
-        // Qs.data[2] = s[2 * 3 + 0] - s[0 * 3 + 2];
-        // Qs.data[3] = s[0 * 3 + 1] - s[1 * 3 + 0];
-        // Qs.data[7] = s[1 * 3 + 0] + s[0 * 3 + 1];
-        // Qs.data[8] = s[2 * 3 + 0] + s[0 * 3 + 2];
-        // Qs.data[12] = s[2 * 3 + 1] + s[1 * 3 + 2];
-        
-        // Qs.data[1] = Qs.data[4];
-        // Qs.data[2] = Qs.data[8];
-        // Qs.data[3] = Qs.data[12];
-        // Qs.data[6] = Qs.data[9];
-        // Qs.data[7] = Qs.data[13];
-        // Qs.data[11] = Qs.data[14];
 
         // jsfeat.linalg.svd_decompose(Qs, W, U, V);
-        var result = numeric.eig(Qs);
-                
-        var evs = [], U = [];
-        var lambda = result.lambda.x;
-        var E = result.E.x;
-        var egvec = [];
-        evs.push(lambda[0]);
-        egvec.push([E[0][0],E[1][0],E[2][0],E[3][0]]);
-        for (var i = 1; i < 4; i++) {
-            var isInsert = false;
-            for (var j = 0; j < evs.length; j++) {
-                if (lambda[i] > evs[j]) {
-                    evs.splice(j, 0, lambda[i]);
-                    if (lambda[i] >= 0) {
-                        egvec.splice(j, 0, [E[0][i],E[1][i],E[2][i],E[3][i]]);
-                    }
-                    else {
-                        egvec.splice(j, 0, [-E[0][i],-E[1][i],-E[2][i],-E[3][i]])
-                    }
-                    isInsert = true;
-                    break;
-                }
-            }
-            if (!isInsert) {
-                evs.push(lambda[i]);
-                if (lambda[i] >= 0) {
-                    egvec.splice(j, 0, [E[0][i],E[1][i],E[2][i],E[3][i]]);
-                }
-                else {
-                    egvec.splice(j, 0, [-E[0][i],-E[1][i],-E[2][i],-E[3][i]])
-                }
-            }
-        }
+        var evs, U;
+        [evs, U] = jacobi_4x4(Qs);
 
-        for (var i = 0; i < 4; i++) {
-            for (var j = 0; j < 4; j++) {
-                U.push(egvec[j][i]);
-            }
-        }
+        // var evs = [], U = [];
+        // var lambda = result.lambda.x;
+        // var E = result.E.x;
+        // var egvec = [];
+        // evs.push(lambda[0]);
+        // egvec.push([E[0][0], E[1][0], E[2][0], E[3][0]]);
+        // for (var i = 1; i < 4; i++) {
+        //     var isInsert = false;
+        //     for (var j = 0; j < evs.length; j++) {
+        //         if (lambda[i] > evs[j]) {
+        //             evs.splice(j, 0, lambda[i]);
+        //             if (lambda[i] >= 0) {
+        //                 egvec.splice(j, 0, [E[0][i], E[1][i], E[2][i], E[3][i]]);
+        //             }
+        //             else {
+        //                 egvec.splice(j, 0, [-E[0][i], -E[1][i], -E[2][i], -E[3][i]])
+        //             }
+        //             isInsert = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!isInsert) {
+        //         evs.push(lambda[i]);
+        //         if (lambda[i] >= 0) {
+        //             egvec.splice(j, 0, [E[0][i], E[1][i], E[2][i], E[3][i]]);
+        //         }
+        //         else {
+        //             egvec.splice(j, 0, [-E[0][i], -E[1][i], -E[2][i], -E[3][i]])
+        //         }
+        //     }
+        // }
+
+        // for (var i = 0; i < 4; i++) {
+        //     for (var j = 0; j < 4; j++) {
+        //         U.push(egvec[j][i]);
+        //     }
+        // }
 
 
         // var evs = W.data;
@@ -448,7 +436,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
 
     // return n: number of real roots
     // return real_roots: Array(4)
-    function solve_deg4 (A, B, C, D, E) {
+    function solve_deg4(A, B, C, D, E) {
         var coefficients = [A, B, C, D, E];
         var roots = quartic(coefficients);
         var n = 0;
@@ -460,6 +448,99 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
             }
         }
         return [n, real_roots];
+    }
+
+    function jacobi_4x4(A) {
+        var D, U;
+        var B = Array(4);
+        var Id = [1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0];
+        U = Id.slice(0);
+        B[0] = A[0];
+        B[1] = A[5];
+        B[2] = A[10];
+        B[3] = A[15];
+        D = B.slice(0);
+        var Z = [0.0, 0.0, 0.0, 0.0];
+
+        for (var iter = 0; iter < 50; iter++) {
+            var sum = Math.abs(A[1]) + Math.abs(A[2]) + Math.abs(A[3]) + Math.abs(A[6]) + Math.abs(A[7]) + Math.abs(A[11]);
+            if (sum == 0.0) {
+                return [D, U];
+            }
+
+            var tresh = (iter < 3) ? 0.2 * sum / 16.0 : 0.0;
+            for (var i = 0; i < 3; i++) {
+                var pAij = 0;
+                for (var j = i + 1; j < 4; j++) {
+                    var Aij = A[5 * i + 1 + pAij];
+                    var eps_machine = 100.0 * Math.abs(Aij);
+
+                    if (iter > 3 && Math.abs(D[i]) + eps_machine == Math.abs(D[i]) && Math.abs(D[j]) + eps_machine == Math.abs(D[j])) {
+                        A[5 * i + 1 + pAij] = 0.0;
+                    }
+                    else if (Math.abs(Aij) > tresh) {
+                        var hh = D[j] - D[i];
+                        var t;
+                        if (Math.abs(hh) + eps_machine == Math.abs(hh)) {
+                            t = Aij / hh;
+                        }
+                        else {
+                            var theta = 0.5 * hh / Aij;
+                            t = 1.0 / (Math.abs(theta) + Math.sqrt(1.0 + theta * theta));
+                            if (theta < 0.0) t = -t;
+                        }
+
+                        hh = t * Aij;
+                        Z[i] -= hh;
+                        Z[j] += hh;
+                        D[i] -= hh;
+                        D[j] += hh;
+                        A[5 * i + 1 + pAij] = 0.0;
+
+                        var c = 1.0 / Math.sqrt(1 + t * t);
+                        var s = t * c;
+                        var tau = s / (1.0 + c);
+
+                        for (var k = 0; k < i - 1; k++) {
+                            var g = A[k * 4 + i];
+                            var h = A[k * 4 + j];
+                            A[k * 4 + i] = g - s * (h + g * tau);
+                            A[k * 4 + j] = h + s * (g - h * tau);
+                        }
+                        for (var k = i + 1; k <= j - 1; k++) {
+                            var g = A[i * 4 + k];
+                            var h = A[k * 4 + j];
+                            A[i * 4 + k] = g - s * (h + g * tau);
+                            A[k * 4 + j] = h + s * (g - h * tau);
+                        }
+                        for (var k = j + 1; k < 4; k++) {
+                            var g = A[i * 4 + k];
+                            var h = A[j * 4 + k];
+                            A[i * 4 + k] = g - s * (h + g * tau);
+                            A[j * 4 + k] = h + s * (g - h * tau);
+                        }
+                        for (var k = 0; k < 4; k++) {
+                            var g = U[k * 4 + i];
+                            var h = U[k * 4 + j];
+                            U[k * 4 + i] = g - s * (h + g * tau);
+                            U[k * 4 + j] = h + s * (g - h * tau);
+                        }
+                    }
+                    pAij++;
+                }
+            }
+
+            for (var i = 0; i < 4; i++) {
+                B[i] += Z[i];
+            }
+            D = B.slice(0);
+            Z = [0,0,0,0];
+        }
+
+        return [D, U];
     }
 
     return {
