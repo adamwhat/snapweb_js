@@ -408,7 +408,7 @@ function getMVMatrix() {
         var translation = [weightedAverage(arrayColumn(translationHistory, 0)),
             weightedAverage(arrayColumn(translationHistory, 1)),
             weightedAverage(arrayColumn(translationHistory, 2))];
-        if (translationHistory.length > 18) {
+        if (translationHistory.length > 30) {
             translationHistory.shift();
         }
 
@@ -448,13 +448,25 @@ function getMVMatrix() {
     return result;
 }
 
+function expWeights(n) {
+    var r = Array(n);
+    var s = 0.0;
+    for (var i = 0; i < n; i++) {
+        r[i] = 1.0 * (i + 1) * (i + 1) * (i+1);
+        s += r[i];
+    }
+    for (var i = 0; i < n; i++) {
+        r[i] /= s;
+    }
+    return r;
+}
+
 function weightedAverage(a) {
     // define weight to be sequential
     var s = 0.0;
+    var w = expWeights(a.length);
     for (var i = 0; i < a.length; i++) {
-        var w = (i+1)/ ((1+a.length)*a.length/2.0);
-
-        s += a[i] * w;
+        s += a[i] * w[i];
     }
     return s;
 }
