@@ -352,9 +352,11 @@ const arrayColumn = (arr, n) => arr.map(x => x[n]);
 function getMVMatrix() {
     if(ctracker !== undefined && ctracker !== null && ctracker.getCurrentPosition() !== false) {
         var positions = ctracker.getCurrentPosition();
-        var objpoints = [];
-        var imgpoints = [];
 
+        var requestData = {
+            "imgpoints" : [],
+            "objpoints" : []
+        };
         Object.keys(occluder_mapping).forEach(function (key) {
             requestData['imgpoints'].push(positions[key]);
             requestData['objpoints'].push(occluder_mapping[key]);
