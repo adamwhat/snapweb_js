@@ -387,6 +387,22 @@ function getMVMatrix() {
 
         var rot = data["rotation"];
 
+        var rotMat3 = mat3.fromValues(
+            rot[0][0], rot[1][0], rot[2][0],
+            rot[0][1], rot[1][1], rot[2][1],
+            rot[0][2], rot[1][2], rot[2][2]
+        );
+        var qt = quat.create();
+        quat.fromMat3(qt, rotMat3);
+
+        if (prevQuat === -1) {
+            prevQuat = qt;
+        } else {
+            quat.slerp(prevQuat, prevQuat, qt, 0.3);
+        }
+
+        mat3.fromQuat(rot, prevQuat);
+
         var latestTranslation = [newTranslateX, newTranslateY, newTranslateZ];
         translationHistory.push(latestTranslation);
         var translation = [weightedAverage(arrayColumn(translationHistory, 0)),
@@ -405,9 +421,9 @@ function getMVMatrix() {
         mat4.fromTranslation(T, translation);
 
         transMatrix = mat4.fromValues(
-            rot[0][0], rot[1][0], rot[2][0], 0,
-            rot[0][1], rot[1][1], rot[2][1], 0,
-            rot[0][2], rot[1][2], rot[2][2], 0,
+            rot[0], rot[3], rot[6], 0,
+            rot[1], rot[4], rot[7], 0,
+            rot[2], rot[5], rot[8], 0,
             0, 0, 0, 1
         );
         var zAxis = vec3.fromValues(0, 0, 1);

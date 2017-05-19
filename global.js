@@ -7,6 +7,7 @@ var translateY = 35.0;
 var translateZ = 250.0;
 
 var translationHistory = [];
+var prevQuat = -1;
 var ctracker;
 
 var fps = 60;
