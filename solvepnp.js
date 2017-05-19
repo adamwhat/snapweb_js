@@ -2,6 +2,16 @@
  * Created by adamwang on 5/17/17.
  */
 
+function getMatElement(m, x, y, size) {
+    return m[x + y*size];
+}
+
+function assert(condition, message) {
+    if (!condition) {
+        throw message || "Assertion failed";
+    }
+}
+
 function PnPSolver(_fx, _fy, _cx, _cy) {
 
     var fx = _fx;

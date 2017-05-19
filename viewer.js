@@ -341,7 +341,7 @@ function radianToDegree(r) {
 
 function getProjectionMatrix() {
     var projMat = mat4.create();
-    mat4.perspective(projMat, 70, webglCanvas.width()/webglCanvas.height(), 0.01, 20000.0);
+    mat4.perspective(projMat, degreeToRadian(35), webglCanvas.width()/webglCanvas.height(), 0.01, 20000.0);
     return projMat;
 }
 
@@ -356,23 +356,41 @@ function getMVMatrix() {
         var imgpoints = [];
 
         Object.keys(occluder_mapping).forEach(function (key) {
-            imgpoints.push(positions[key]);
-            objpoints.push(occluder_mapping[key]);
-        });
-        // var objpoints = [[-0.7561,0.4166,0.7781],[0.7587,0.4112,0.7705],[-0.6283,-0.9657,0.7773],[0.6219,-0.9701,0.7711]];
-        // var imgpoints = [[663.2573897170773,220.90189596099242],[822.1705208569673,214.52767008787782],[684.8182037363805,374.3041765424229],[812.0664095442263,368.9899811787641]];
-        var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);        
-        // var data = PnPSolver(webglCanvas.width(), webglCanvas.height(), webglCanvas.width()/2.0, webglCanvas.height()/2.0).solvePnP(objpoints, imgpoints);
-        console.log(data);
+            requestData['imgpoints'].push(positions[key]);
+            requestData['objpoints'].push(occluder_mapping[key]);
+        })
+        requestData['fx'] = webglCanvas.width();
+        requestData['fy'] = webglCanvas.width();
+        requestData['cx'] = webglCanvas.width()/2.0;
+        requestData['cy'] = webglCanvas.height()/2.0;
 
-        var rot = data.rotation;
+        var d1 = PnPSolver(requestData['fx'], requestData['fy'], requestData['cx'], requestData['cy']).solvePnP(requestData['objpoints'], requestData['imgpoints']);
+        d1['rotation'] = [
+            [d1['rotation'][0], d1['rotation'][3], d1['rotation'][6]],
+            [d1['rotation'][1], d1['rotation'][4], d1['rotation'][7]],
+            [d1['rotation'][2], d1['rotation'][5], d1['rotation'][8]]
+        ];
 
-        var latestTranslation = data.translation;
+        d1['translation'] = [
+            [d1['translation'][0]],
+            [d1['translation'][1]],
+            [d1['translation'][2]]
+        ];
+
+        var data = d1;
+
+        var newTranslateX = data["translation"][0][0];
+        var newTranslateY = data["translation"][1][0];
+        var newTranslateZ = data["translation"][2][0];
+
+        var rot = data["rotation"];
+
+        var latestTranslation = [newTranslateX, newTranslateY, newTranslateZ];
         translationHistory.push(latestTranslation);
-        var translation = [math.mean(arrayColumn(translationHistory, 0)),
-            math.mean(arrayColumn(translationHistory, 1)),
-            math.mean(arrayColumn(translationHistory, 2))];
-        if (translationHistory.length > 10) {
+        var translation = [weightedAverage(arrayColumn(translationHistory, 0)),
+            weightedAverage(arrayColumn(translationHistory, 1)),
+            weightedAverage(arrayColumn(translationHistory, 2))];
+        if (translationHistory.length > 18) {
             translationHistory.shift();
         }
 
@@ -381,20 +399,20 @@ function getMVMatrix() {
         translateZ = translation[2];
 
         var T = mat4.create();
-        translation = vec3.fromValues(translateX, translateY, translateZ);
+        var translation = vec3.fromValues(translateX, translateY, translateZ);
         mat4.fromTranslation(T, translation);
 
         transMatrix = mat4.fromValues(
-            rot[0], rot[3], rot[6], 0,
-            rot[1], rot[4], rot[7], 0,
-            rot[2], rot[5], rot[8], 0,
+            rot[0][0], rot[1][0], rot[2][0], 0,
+            rot[0][1], rot[1][1], rot[2][1], 0,
+            rot[0][2], rot[1][2], rot[2][2], 0,
             0, 0, 0, 1
         );
         var zAxis = vec3.fromValues(0, 0, 1);
 
         // hack that convert cv convention to gl
         var cvToGl = mat4.fromValues(
-            -1, 0, 0, 0,
+            1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, -1, 0,
             0, 0, 0, 1
@@ -403,13 +421,23 @@ function getMVMatrix() {
         mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
 
         mat4.mul(transMatrix, transMatrix, T);
-    }
 
+    }
     var result = mat4.create();
     mat4.invert(result, transMatrix);
     return result;
 }
 
+function weightedAverage(a) {
+    // define weight to be sequential
+    var s = 0.0;
+    for (var i = 0; i < a.length; i++) {
+        var w = (i+1)/ ((1+a.length)*a.length/2.0);
+
+        s += a[i] * w;
+    }
+    return s;
+}
 function runWebGL(meshes, queue) {
     env = glEnv(meshes, queue);
     updateWebGL();

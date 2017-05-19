@@ -11,8 +11,8 @@ CALIBRATE_CAMERA = True
 @app.route("/solvepnp", methods=['GET', 'POST'])
 def hello():
     data = json.loads(request.data.decode("utf-8"))
-    idxs = np.array([0,1,5,6])
-    # idxs = np.array(range(data['imgpoints']))
+    # idxs = np.array([3,4,5,6])
+    idxs = np.array(range(len(data['imgpoints'])))
     imgpoints = np.array(data['imgpoints']).astype('float32')[idxs].reshape(len(idxs), 1, 2)
     objpoints = np.array(data['objpoints']).astype('float32')[idxs].reshape(len(idxs), 1, 3)
 
@@ -23,28 +23,22 @@ def hello():
     
     cameraMatrix = np.array([[fx, 0, cx],
                     [0, fy, cy],
-                    [0,  0, 1.0]]).astype('float32')
-    # print "old camera", cameraMatrix
-
-    # import pdb; pdb.set_trace()
-    if CALIBRATE_CAMERA:
-        _, cameraMatrix, distCoeffs, _, _= cv2.calibrateCamera(
-                objpoints.reshape(1, len(idxs), 3).astype('float32'),
-                imgpoints.reshape(1, len(idxs), 2).astype('float32'),
-                (fx, fy),
-                cameraMatrix,
-                np.zeros(6, 'float32'),
-                flags=cv2.CALIB_USE_INTRINSIC_GUESS)
-    # print "new camera", cameraMatrix
-    # print "new dist", None if not CALIBRATE_CAMERA else distCoeffs
-
-    rotation, translation = cv2.solvePnP(objpoints,
-                                         imgpoints,
-                                         cameraMatrix,
-                                         distCoeffs if CALIBRATE_CAMERA else None,
-                                         flags=cv2.SOLVEPNP_P3P)[-2:]
-
-    # print("rotation from pnp: ", rotation)
+                    [0,  0, 1.0]]
+    rotationVec, translation = cv2.solvePnP(objpoints, imgpoints,
+                                         np.array(cameraMatrix).astype('float32'),
+                                         None, flags=cv2.SOLVEPNP_P3P)[-2:]
+    """
+    rotation1, translation1, inline = cv2.solvePnPRansac(np.array(objpoints).astype('float32'), 
+                                                         np.array(imgpoints).astype('float32'), 
+                                                         np.array(cameraMatrix).astype('float32'),
+                                                         None,
+                                                )
+    """
+    rotation, _ = cv2.Rodrigues(rotationVec)
+    rotation = np.array(rotation)
+    print("imgpoints: ", imgpoints)
+    print("camera : ", cameraMatrix)
+    print("rotation from pnp: ", rotation)
     # print("rotation from pnpRansac: ", rotation1)
     # print("translation from pnp: ", translation)
     # print("translation from pnpRansac: ", translation1)
