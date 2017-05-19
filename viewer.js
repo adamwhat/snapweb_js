@@ -341,7 +341,7 @@ function radianToDegree(r) {
 
 function getProjectionMatrix() {
     var projMat = mat4.create();
-    mat4.perspective(projMat, 70, webglCanvas.width()/webglCanvas.height(), 0.01, 20000.0);
+    mat4.perspective(projMat, degreeToRadian(35), webglCanvas.width()/webglCanvas.height(), 0.01, 20000.0);
     return projMat;
 }
 
@@ -363,69 +363,80 @@ function getMVMatrix() {
         requestData['cx'] = webglCanvas.width()/2.0;
         requestData['cy'] = webglCanvas.height()/2.0;
 
-        $.ajax({
-            async: true,
-            url: 'http://localhost:9999/solvepnp',
-            data: JSON.stringify(requestData),
-            type: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            error: function (xhr, status, error) {
-                console.log(error);
-            },
-            success: function (data) {
-                var newTranslateX = data["translation"][0][0];
-                var newTranslateY = data["translation"][1][0];
-                var newTranslateZ = data["translation"][2][0];
+        var d1 = PnPSolver(requestData['fx'], requestData['fy'], requestData['cx'], requestData['cy']).solvePnP(requestData['objpoints'], requestData['imgpoints']);
+        d1['rotation'] = [
+            [d1['rotation'][0], d1['rotation'][3], d1['rotation'][6]],
+            [d1['rotation'][1], d1['rotation'][4], d1['rotation'][7]],
+            [d1['rotation'][2], d1['rotation'][5], d1['rotation'][8]]
+        ];
 
-                var rot = data["rotation"];
+        d1['translation'] = [
+            [d1['translation'][0]],
+            [d1['translation'][1]],
+            [d1['translation'][2]]
+        ];
 
-                var latestTranslation = [newTranslateX, newTranslateY, newTranslateZ];
-                translationHistory.push(latestTranslation);
-                var translation = [math.mean(arrayColumn(translationHistory, 0)),
-                    math.mean(arrayColumn(translationHistory, 1)),
-                    math.mean(arrayColumn(translationHistory, 2))];
-                if (translationHistory.length > 10) {
-                    translationHistory.shift();
-                }
+        var data = d1;
 
-                translateX = translation[0];
-                translateY = translation[1];
-                translateZ = translation[2];
+        var newTranslateX = data["translation"][0][0];
+        var newTranslateY = data["translation"][1][0];
+        var newTranslateZ = data["translation"][2][0];
 
-                var T = mat4.create();
-                var translation = vec3.fromValues(translateX, translateY, translateZ);
-                mat4.fromTranslation(T, translation);
+        var rot = data["rotation"];
 
-                transMatrix = mat4.fromValues(
-                    rot[0][0], rot[1][0], rot[2][0], 0,
-                    rot[0][1], rot[1][1], rot[2][1], 0,
-                    rot[0][2], rot[1][2], rot[2][2], 0,
-                    0, 0, 0, 1,
-                );
-                var zAxis = vec3.fromValues(0, 0, 1);
+        var latestTranslation = [newTranslateX, newTranslateY, newTranslateZ];
+        translationHistory.push(latestTranslation);
+        var translation = [weightedAverage(arrayColumn(translationHistory, 0)),
+            weightedAverage(arrayColumn(translationHistory, 1)),
+            weightedAverage(arrayColumn(translationHistory, 2))];
+        if (translationHistory.length > 18) {
+            translationHistory.shift();
+        }
 
-                // hack that convert cv convention to gl
-                var cvToGl = mat4.fromValues(
-                    -1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, -1, 0,
-                    0, 0, 0, 1,
-                );
-                mat4.mul(transMatrix, cvToGl, transMatrix);
-                mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
+        translateX = translation[0];
+        translateY = translation[1];
+        translateZ = translation[2];
 
-                mat4.mul(transMatrix, transMatrix, T);
+        var T = mat4.create();
+        var translation = vec3.fromValues(translateX, translateY, translateZ);
+        mat4.fromTranslation(T, translation);
 
-            }
-        });
+        transMatrix = mat4.fromValues(
+            rot[0][0], rot[1][0], rot[2][0], 0,
+            rot[0][1], rot[1][1], rot[2][1], 0,
+            rot[0][2], rot[1][2], rot[2][2], 0,
+            0, 0, 0, 1
+        );
+        var zAxis = vec3.fromValues(0, 0, 1);
+
+        // hack that convert cv convention to gl
+        var cvToGl = mat4.fromValues(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, -1, 0,
+            0, 0, 0, 1
+        );
+        mat4.mul(transMatrix, cvToGl, transMatrix);
+        mat4.rotate(transMatrix, transMatrix, degreeToRadian(-180), zAxis);
+
+        mat4.mul(transMatrix, transMatrix, T);
+
     }
-
     var result = mat4.create();
     mat4.invert(result, transMatrix);
     return result;
 }
 
+function weightedAverage(a) {
+    // define weight to be sequential
+    var s = 0.0;
+    for (var i = 0; i < a.length; i++) {
+        var w = (i+1)/ ((1+a.length)*a.length/2.0);
+
+        s += a[i] * w;
+    }
+    return s;
+}
 function runWebGL(meshes, queue) {
     env = glEnv(meshes, queue);
     updateWebGL();
