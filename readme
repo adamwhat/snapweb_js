@@ -9,3 +9,12 @@ Quickstart:
 Overview:
 	This project recognizes human faces, find the transformation matrix between the world and the camera framework, and renders face filters on top of recognized face.
 
+Contributers:
+	https://github.com/Yuyan-Lydia-Tang
+	https://github.com/Wang-Siyuan
+	https://github.com/guoyiteng
+	https://github.com/adamwhat
+
+SolvePnP JS Implementation:
+	Based on OpenCV's P3P implementation and the paper of X.S. Gao, X.-R. Hou, J. Tang, H.-F. Chang "Complete Solution Classification for the Perspective-Three-Point Problem"
+	
