@@ -280,7 +280,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         // Centroids:
         var C_start = vec3.create(), C_end = vec3.create();
         for (var i = 0; i < 3; i++) {
-            C_end[i] = (getMatElement(M_end, 0, i, 3), + getMatElement(M_end, 1, i, 3) + getMatElement(M_end, 2, i, 3)) / 3.0;
+            C_end[i] = (getMatElement(M_end, 0, i, 3) + getMatElement(M_end, 1, i, 3) + getMatElement(M_end, 2, i, 3)) / 3.0;
         }
 
         C_start[0] = (X0 + X1 + X2) / 3.0;
@@ -290,32 +290,116 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         // Covariance matrix s: mat3
         var s = Array(9);
         for (var j = 0; j < 3; j++) {
-            s[0 * 3 + j] = (X0 * getMatElement(M_end, 0, j, 3) + X1 * getMatElement(M_end, 1, j, 3) + X2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[0];
-            s[1 * 3 + j] = (Y0 * getMatElement(M_end, 0, j, 3) + Y1 * getMatElement(M_end, 1, j, 3) + Y2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[1];
-            s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j, 3)) / 3 - C_end[j] * C_start[2];
+            s[0 * 3 + j] = (X0 * getMatElement(M_end, 0, j, 3) + X1 * getMatElement(M_end, 1, j, 3) + X2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[0];
+            s[1 * 3 + j] = (Y0 * getMatElement(M_end, 0, j, 3) + Y1 * getMatElement(M_end, 1, j, 3) + Y2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[1];
+            s[2 * 3 + j] = (Z0 * getMatElement(M_end, 0, j, 3) + Z1 * getMatElement(M_end, 1, j, 3) + Z2 * getMatElement(M_end, 2, j, 3)) / 3.0 - C_end[j] * C_start[2];
         }
 
-        var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
-        var W = new jsfeat.matrix_t(4, 1, jsfeat.F32_t | jsfeat.C1_t);
-        var U = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
-        var V = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
+        var Qs = [[0,0,0,0],
+                  [0,0,0,0],
+                  [0,0,0,0],
+                  [0,0,0,0]];
+        // var Qs = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
+        // var W = new jsfeat.matrix_t(1, 4, jsfeat.F32_t | jsfeat.C1_t);
+        // var U = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
+        // var V = new jsfeat.matrix_t(4, 4, jsfeat.F32_t | jsfeat.C1_t);
 
         // Qs = Array(16), evs0 =  = Array(4), U0 = Array(16);
 
-        Qs.data[0 * 4 + 0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
-        Qs.data[1 * 4 + 1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
-        Qs.data[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
-        Qs.data[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
+        // Qs.data[0 * 4 + 0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
+        // Qs.data[1 * 4 + 1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
+        // Qs.data[2 * 4 + 2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
+        // Qs.data[3 * 4 + 3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
 
-        Qs.data[1 * 4 + 0] = Qs[0 * 4 + 1] = s[1 * 3 + 2] - s[2 * 3 + 1];
-        Qs.data[2 * 4 + 0] = Qs[0 * 4 + 2] = s[2 * 3 + 0] - s[0 * 3 + 2];
-        Qs.data[3 * 4 + 0] = Qs[0 * 4 + 3] = s[0 * 3 + 1] - s[1 * 3 + 0];
-        Qs.data[2 * 4 + 1] = Qs[1 * 4 + 2] = s[1 * 3 + 0] + s[0 * 3 + 1];
-        Qs.data[3 * 4 + 1] = Qs[1 * 4 + 3] = s[2 * 3 + 0] + s[0 * 3 + 2];
-        Qs.data[3 * 4 + 2] = Qs[2 * 4 + 3] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        Qs[0][0] = s[0 * 3 + 0] + s[1 * 3 + 1] + s[2 * 3 + 2];
+        Qs[1][1] = s[0 * 3 + 0] - s[1 * 3 + 1] - s[2 * 3 + 2];
+        Qs[2][2] = s[1 * 3 + 1] - s[2 * 3 + 2] - s[0 * 3 + 0];
+        Qs[3][3] = s[2 * 3 + 2] - s[0 * 3 + 0] - s[1 * 3 + 1];
 
-        jsfeat.linalg.svd_decompose(Qs, evs, U, V);
-        var evs = W.data;
+        // Qs.data[1 * 4 + 0] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        // Qs.data[2 * 4 + 0] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        // Qs.data[3 * 4 + 0] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        // Qs.data[2 * 4 + 1] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        // Qs.data[3 * 4 + 1] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        // Qs.data[3 * 4 + 2] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        // Qs.data[0 * 4 + 1] = Qs.data[1 * 4 + 0];
+        // Qs.data[0 * 4 + 2] = Qs.data[2 * 4 + 0];
+        // Qs.data[0 * 4 + 3] = Qs.data[3 * 4 + 0];
+        // Qs.data[1 * 4 + 2] = Qs.data[2 * 4 + 1];
+        // Qs.data[1 * 4 + 3] = Qs.data[3 * 4 + 1];
+        // Qs.data[2 * 4 + 3] = Qs.data[3 * 4 + 2];
+        
+        Qs[1][0] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        Qs[2][0] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        Qs[3][0] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        Qs[2][1] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        Qs[3][1] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        Qs[3][2] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        Qs[0][1] = Qs[1][0];
+        Qs[0][2] = Qs[2][0];
+        Qs[0][3] = Qs[3][0];
+        Qs[1][2] = Qs[2][1];
+        Qs[1][3] = Qs[3][1];
+        Qs[2][3] = Qs[3][2];
+
+
+        // Qs.data[1] = s[1 * 3 + 2] - s[2 * 3 + 1];
+        // Qs.data[2] = s[2 * 3 + 0] - s[0 * 3 + 2];
+        // Qs.data[3] = s[0 * 3 + 1] - s[1 * 3 + 0];
+        // Qs.data[7] = s[1 * 3 + 0] + s[0 * 3 + 1];
+        // Qs.data[8] = s[2 * 3 + 0] + s[0 * 3 + 2];
+        // Qs.data[12] = s[2 * 3 + 1] + s[1 * 3 + 2];
+        
+        // Qs.data[1] = Qs.data[4];
+        // Qs.data[2] = Qs.data[8];
+        // Qs.data[3] = Qs.data[12];
+        // Qs.data[6] = Qs.data[9];
+        // Qs.data[7] = Qs.data[13];
+        // Qs.data[11] = Qs.data[14];
+
+        // jsfeat.linalg.svd_decompose(Qs, W, U, V);
+        var result = numeric.eig(Qs);
+                
+        var evs = [], U = [];
+        var lambda = result.lambda.x;
+        var E = result.E.x;
+        var egvec = [];
+        evs.push(lambda[0]);
+        egvec.push([E[0][0],E[1][0],E[2][0],E[3][0]]);
+        for (var i = 1; i < 4; i++) {
+            var isInsert = false;
+            for (var j = 0; j < evs.length; j++) {
+                if (lambda[i] > evs[j]) {
+                    evs.splice(j, 0, lambda[i]);
+                    if (lambda[i] >= 0) {
+                        egvec.splice(j, 0, [E[0][i],E[1][i],E[2][i],E[3][i]]);
+                    }
+                    else {
+                        egvec.splice(j, 0, [-E[0][i],-E[1][i],-E[2][i],-E[3][i]])
+                    }
+                    isInsert = true;
+                    break;
+                }
+            }
+            if (!isInsert) {
+                evs.push(lambda[i]);
+                if (lambda[i] >= 0) {
+                    egvec.splice(j, 0, [E[0][i],E[1][i],E[2][i],E[3][i]]);
+                }
+                else {
+                    egvec.splice(j, 0, [-E[0][i],-E[1][i],-E[2][i],-E[3][i]])
+                }
+            }
+        }
+
+        for (var i = 0; i < 4; i++) {
+            for (var j = 0; j < 4; j++) {
+                U.push(egvec[j][i]);
+            }
+        }
+
+
+        // var evs = W.data;
         // Looking for the largest eigen value:
         var i_ev = 0;
         var ev_max = evs[i_ev];
@@ -328,7 +412,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         // Quaternion:
         var q = Array(4);
         for (var i = 0; i < 4; i++)
-            q[i] = U.data[i * 4 + i_ev];
+            q[i] = U[i * 4 + i_ev];
 
         var q02 = q[0] * q[0], q12 = q[1] * q[1], q22 = q[2] * q[2], q32 = q[3] * q[3];
         var q0_1 = q[0] * q[1], q0_2 = q[0] * q[2], q0_3 = q[0] * q[3];
@@ -370,7 +454,7 @@ function PnPSolver(_fx, _fy, _cx, _cy) {
         var n = 0;
         var real_roots = Array(4);
         for (var i = 0; i < 4; i++) {
-            if (roots[i].im - 0 < 0.000001) {
+            if (Math.abs(roots[i].im - 0) < 0.000001) {
                 real_roots[n] = roots[i].re;
                 n++;
             }
