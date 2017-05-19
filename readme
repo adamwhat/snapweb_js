@@ -1,7 +1,7 @@
 Quickstart:
 	* python scripts/run.py
 
-	Run the above line in the terminal and open browser. You will be able to see our project on localhost:8000. Note that it takes about 30 seconds to load the meshes.
+	Run the above line in the terminal and open browser. You will be able to see our project on localhost:5000. Note that it takes about 30 seconds to load the meshes.
 
 	* https://cs4621.herokuapp.com/
 	You can also visit this url to see our work.
