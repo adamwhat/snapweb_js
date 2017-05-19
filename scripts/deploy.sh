@@ -5,5 +5,5 @@
 LocalBranch=${1:-master}
 
 pushd "`git rev-parse --show-toplevel`"
-echo "git subtree push --prefix final heroku $LocalBranch:master -f"
+git push heroku `git subtree split --prefix final $LocalBranch`:master --force
 popd
